@@ -1,0 +1,2 @@
+(library
+ (name rubiks_cube_solver))
