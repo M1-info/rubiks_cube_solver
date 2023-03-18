@@ -5,22 +5,20 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github M1-info/rubiks_cube_solver))
 
-(authors "Author Name")
+(authors "Christian Tomasino" "Maxime Dupont") 
 
-(maintainers "Maintainer Name")
+(maintainers "Christian Tomasino" "Maxime Dupont")
 
-(license LICENSE)
+(license MIT)
 
 (documentation https://url/to/documentation)
 
 (package
  (name rubiks_cube_solver)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "Rubik's cube solver")
+ (description "University project to use OCaml to solve a Rubik's cube")
  (depends ocaml dune)
  (tags
   (topics "to describe" your project)))
-
-; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
