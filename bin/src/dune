@@ -1,0 +1,3 @@
+(library
+ (name cube)
+ (libraries result tgls.tgl4))

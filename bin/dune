@@ -1,4 +1,4 @@
 (executable
  (public_name rubiks_cube_solver)
  (name main)
- (libraries glfw-ocaml result tgls.tgl4 rubiks_cube_solver))
+ (libraries glfw-ocaml tgls.tgl4 cube rubiks_cube_solver))
