@@ -1,3 +1,4 @@
 (library
  (name classes_module)
+ (modules rubiks_cube goals)
  (libraries utils_module))

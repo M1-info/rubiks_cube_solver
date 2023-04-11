@@ -18,3 +18,5 @@ type edges =
 type edge = {edge: edges; mutable orientation: int}
 type corner =  {corner: corners; mutable orientation: int}
 type center = {mutable color: color}
+
+(* type cube = {edges: edge array; corners: corner array; centers: center array} *)
