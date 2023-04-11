@@ -1,4 +1,4 @@
-type color = WHITE | GREEN | RED | BLUE | ORANGE | YELLOW
+type color = RED | GREEN | WHITE | BLUE | YELLOW | ORANGE
 type face = UP | LEFT | FRONT | RIGHT | BACK | DOWN
 
 type move = 

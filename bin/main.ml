@@ -2,19 +2,16 @@ open Classes_module.Rubiks_cube
 
 let cube = new rubiks_cube ;;
 cube#init () ;;
+(* cube#show_cube () ;; *)
+cube#u () ;;
+cube#show_cube () ;;
 
-let read_file filename = 
-  let lines = ref [] in
-  let chan = open_in filename in
-  try
-    while true; do
-      lines := input_line chan :: !lines;
-      print_string "line: ";
-      print_string (input_line chan);
-    done; !lines
-  with End_of_file ->
-    close_in chan;
-    List.rev !lines ;;
+(* create a read_file function that get a .pdb binary file and print the content as human-readable string
+let read_file file =
+  let ic = open_in_bin file in *)
+  
+
+(* read the corner.pdb file *)
 
 
-read_file "/home/caehtel/dev/algo_complexity/rubiks_cube_solver/bin/databases/corner.pdb" ;;
+(* read_file "bin/databases/corner.pdb" ;; *)

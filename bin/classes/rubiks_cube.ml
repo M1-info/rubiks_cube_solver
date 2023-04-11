@@ -4,7 +4,7 @@ open Utils_module.Utils;;
 class rubiks_cube = 
   object (self)
     val mutable edges = Array.make 12 {edge = UB; orientation = 0}
-    val mutable corners = Array.make 8 {corner = URF; orientation = 0}
+    val mutable corners = Array.make 8 {corner = ULF; orientation = 0}
     val mutable centers = Array.make 6 {color = RED}
     
     method init () = 
@@ -14,13 +14,9 @@ class rubiks_cube =
       for i = 0 to 7 do
         corners.(i) <- {corner = get_corner_from_index(i); orientation = 0}
       done;
-      centers.(0).color <- RED;
-      centers.(1).color <- BLUE;
-      centers.(2).color <- WHITE;
-      centers.(3).color <- GREEN;
-      centers.(4).color <- YELLOW;
-      centers.(5).color <- ORANGE;
-
+      for i = 0 to 5 do
+        centers.(i) <- {color = color_from_int(i)}
+      done;
 
     method get_edge_colors index =
       let colors = Array.make 2 WHITE in
@@ -526,5 +522,16 @@ class rubiks_cube =
       let hold_edge = edges.(get_edge_from_enum DR) in
       edges.(get_edge_from_enum DR) <- edges.(get_edge_from_enum DL);
       edges.(get_edge_from_enum DL) <- hold_edge;
+
+    method show_cube () = 
+      for face = 0 to 5 do 
+        (* print_int (int_of_face face) ; *)
+        for row = 0 to 2 do
+          for col = 0 to 2 do 
+            print_string (string_of_color (self#get_facette_color (face_from_int face) row col)) ;
+            print_string " " ;
+          done ;
+        done;
+      done;
 
   end;;
