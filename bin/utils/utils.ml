@@ -12,9 +12,9 @@ let string_of_color color =
 let color_from_int color = 
   match color with
   | 0 -> RED
-  | 1 -> GREEN
+  | 1 -> BLUE
   | 2 -> WHITE
-  | 3 -> BLUE
+  | 3 -> GREEN
   | 4 -> YELLOW
   | 5 -> ORANGE
   | _ -> failwith "Invalid color";;
@@ -22,18 +22,18 @@ let color_from_int color =
 let int_of_face face = 
   match face with
   | UP    ->  0
-  | RIGHT ->  1
+  | LEFT ->   1
   | FRONT ->  2
-  | LEFT  ->  3
+  | RIGHT  -> 3
   | BACK  ->  4
   | DOWN  ->  5;;
 
 let face_from_int face = 
   match face with
   | 0 ->  UP
-  | 1 ->  RIGHT
+  | 1 ->  LEFT
   | 2 ->  FRONT
-  | 3 ->  LEFT
+  | 3 ->  RIGHT
   | 4 ->  BACK
   | 5 ->  DOWN
   | _ -> failwith "Invalid face";;
@@ -74,25 +74,36 @@ let get_edge_from_enum enum =
 
 let get_corner_from_index index = 
   match index with
-  | 0 -> URF 
-  | 1 -> ULF 
-  | 2 -> ULB 
-  | 3 -> URB 
-  | 4 -> DRF 
-  | 5 -> DLF 
-  | 6 -> DLB 
-  | 7 -> DRB
+  | 0 -> ULB 
+  | 1 -> URB 
+  | 2 -> URF 
+  | 3 -> ULF 
+  | 4 -> DLF 
+  | 5 -> DLB 
+  | 6 -> DRB 
+  | 7 -> DRF
   | _ -> failwith "Invalid corner index";;
 
 
 let get_corner_from_enum enum =
   match enum with
-  | URF -> 0
-  | ULF -> 1
-  | ULB -> 2
-  | URB -> 3
-  | DRF -> 4
-  | DLF -> 5
-  | DLB -> 6
-  | DRB -> 7;;
+  | ULB -> 0
+  | URB -> 1
+  | URF -> 2
+  | ULF -> 3
+  | DLF -> 4
+  | DLB -> 5
+  | DRB -> 6
+  | DRF -> 7;;
   
+
+let corner_to_string corner = 
+  match corner with
+  | URF -> "URF"
+  | ULF -> "ULF"
+  | ULB -> "ULB"
+  | URB -> "URB"
+  | DRF -> "DRF"
+  | DLF -> "DLF"
+  | DLB -> "DLB"
+  | DRB -> "DRB";;

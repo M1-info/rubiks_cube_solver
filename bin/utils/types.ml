@@ -1,4 +1,4 @@
-type color = RED | GREEN | WHITE | BLUE | YELLOW | ORANGE
+type color = RED | BLUE | WHITE | GREEN | YELLOW | ORANGE
 type face = UP | LEFT | FRONT | RIGHT | BACK | DOWN
 
 type move = 
@@ -10,7 +10,7 @@ type move =
     R | RPRIME | R2
 
 type corners = 
-    URF | ULF | ULB | URB | DRF | DLF | DLB | DRB
+    ULB | URB | URF | ULF | DLF | DLB | DRB | DRF
 
 type edges =
     UB | UR | UF | UL | FR | FL | BL | BR | DF | DL | DB | DR

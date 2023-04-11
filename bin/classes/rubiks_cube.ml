@@ -53,14 +53,35 @@ class rubiks_cube =
           colors.(0) <- first;
           colors.(1) <- second;
           colors.(2) <- third;
+
+          if (get_corner_from_enum corner.corner + index) mod 2 == 1 then (
+            let hold_color = colors.(1) in
+            colors.(1) <- colors.(2);
+            colors.(2) <- hold_color;
+          )
+
         ) else if corner.orientation = 1 then (
           colors.(0) <- second;
           colors.(1) <- third;
           colors.(2) <- first;
+
+          if (get_corner_from_enum corner.corner + index) mod 2 == 1 then (
+            let hold_color = colors.(0) in
+            colors.(0) <- colors.(1);
+            colors.(1) <- hold_color;
+          )
+
         ) else (
           colors.(0) <- third;
           colors.(1) <- first;
           colors.(2) <- second;
+
+          if (get_corner_from_enum corner.corner + index) mod 2 == 1 then (
+            let hold_color = colors.(0) in
+            colors.(0) <- colors.(2);
+            colors.(2) <- hold_color;
+          )
+
         )
       in
       match corner.corner with
@@ -154,9 +175,13 @@ class rubiks_cube =
     
     method update_corner_orientation corner_enum delta = 
       let corner = corners.(get_corner_from_enum corner_enum) in
-      corner.orientation <- corner.orientation + delta;
-      if corner.orientation = 3 then corner.orientation <- 0;
-      if corner.orientation = 4 then corner.orientation <- 1;
+      corner.orientation <- (corner.orientation + delta) mod 3;
+
+
+    method update_edge_orientation edge_enum = 
+      let edge = edges.(get_edge_from_enum edge_enum) in
+      let orientation = edge.orientation in
+      edge.orientation <- orientation lxor 1;
 
     
     method u () = 
@@ -170,7 +195,7 @@ class rubiks_cube =
       edges.(get_edge_from_enum UL) <- edges.(get_edge_from_enum UF);
       edges.(get_edge_from_enum UF) <- edges.(get_edge_from_enum UR);
       edges.(get_edge_from_enum UR) <- edges.(get_edge_from_enum UB);
-      edges.(get_edge_from_enum UB) <- hold_edge;
+      edges.(get_edge_from_enum UB) <- hold_edge; 
 
 
     method u_prime () =
@@ -219,9 +244,9 @@ class rubiks_cube =
       edges.(get_edge_from_enum UL) <- hold_edge;
 
       self#update_corner_orientation DLB 1;
-      self#update_corner_orientation DLF 2;
+      self#update_corner_orientation DLF 1;
       self#update_corner_orientation ULF 1;
-      self#update_corner_orientation ULB 2;
+      self#update_corner_orientation ULB 1;
 
 
     method l_prime () =
@@ -238,9 +263,9 @@ class rubiks_cube =
       edges.(get_edge_from_enum DL) <- hold_edge;
 
       self#update_corner_orientation DLB 1;
-      self#update_corner_orientation DLF 2;
+      self#update_corner_orientation DLF 1;
       self#update_corner_orientation ULF 1;
-      self#update_corner_orientation ULB 2;
+      self#update_corner_orientation ULB 1;
 
 
     method l_2 () = 
@@ -275,21 +300,14 @@ class rubiks_cube =
       edges.(get_edge_from_enum FR) <- hold_edge;
 
       self#update_corner_orientation ULF 2;
-      self#update_corner_orientation URF 1;
+      self#update_corner_orientation URF 2;
       self#update_corner_orientation DRF 2;
-      self#update_corner_orientation DLF 1;
+      self#update_corner_orientation DLF 2;
 
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum UF).edge) lxor 1 in
-      edges.(get_edge_from_enum UF) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum FL).edge) lxor 1 in
-      edges.(get_edge_from_enum FL) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum DF).edge) lxor 1 in
-      edges.(get_edge_from_enum DF) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum FR).edge) lxor 1 in
-      edges.(get_edge_from_enum FR) <- {edge = get_edge_from_index new_edge; orientation = 0};
+      self#update_edge_orientation UF;
+      self#update_edge_orientation FL;
+      self#update_edge_orientation DF;
+      self#update_edge_orientation FR;
 
 
   method f_prime () = 
@@ -306,21 +324,14 @@ class rubiks_cube =
       edges.(get_edge_from_enum FL) <- hold_edge;
 
       self#update_corner_orientation ULF 2;
-      self#update_corner_orientation URF 1;
+      self#update_corner_orientation URF 2;
       self#update_corner_orientation DRF 2;
-      self#update_corner_orientation DLF 1;
+      self#update_corner_orientation DLF 2;
 
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum UF).edge) lxor 1 in
-      edges.(get_edge_from_enum UF) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum FL).edge) lxor 1 in
-      edges.(get_edge_from_enum FL) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum DF).edge) lxor 1 in
-      edges.(get_edge_from_enum DF) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum FR).edge) lxor 1 in
-      edges.(get_edge_from_enum FR) <- {edge = get_edge_from_index new_edge; orientation = 0};
+      self#update_edge_orientation UF;
+      self#update_edge_orientation DF;
+      self#update_edge_orientation FR;
+      self#update_edge_orientation FL;
 
 
     method f_2 () = 
@@ -354,9 +365,9 @@ class rubiks_cube =
       edges.(get_edge_from_enum FR) <- edges.(get_edge_from_enum DR);
       edges.(get_edge_from_enum DR) <- hold_edge;
 
-      self#update_corner_orientation DRB 2;
+      self#update_corner_orientation DRB 1;
       self#update_corner_orientation DRF 1;
-      self#update_corner_orientation URF 2;
+      self#update_corner_orientation URF 1;
       self#update_corner_orientation URB 1;
 
     
@@ -373,9 +384,9 @@ class rubiks_cube =
       edges.(get_edge_from_enum FR) <- edges.(get_edge_from_enum UR);
       edges.(get_edge_from_enum UR) <- hold_edge;
 
-      self#update_corner_orientation DRB 2;
+      self#update_corner_orientation DRB 1;
       self#update_corner_orientation DRF 1;
-      self#update_corner_orientation URF 2;
+      self#update_corner_orientation URF 1;
       self#update_corner_orientation URB 1;
 
 
@@ -411,22 +422,15 @@ class rubiks_cube =
       edges.(get_edge_from_enum DB) <- edges.(get_edge_from_enum BL);
       edges.(get_edge_from_enum BL) <- hold_edge;
 
-      self#update_corner_orientation ULB 1;
+      self#update_corner_orientation ULB 2;
       self#update_corner_orientation URB 2;
-      self#update_corner_orientation DRB 1;
+      self#update_corner_orientation DRB 2;
       self#update_corner_orientation DLB 2;
 
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum UB).edge) lxor 1 in
-      edges.(get_edge_from_enum UB) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum BL).edge) lxor 1 in
-      edges.(get_edge_from_enum BL) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum DB).edge) lxor 1 in
-      edges.(get_edge_from_enum DB) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum BR).edge) lxor 1 in
-      edges.(get_edge_from_enum BR) <- {edge = get_edge_from_index new_edge; orientation = 0};
+      self#update_edge_orientation UB;
+      self#update_edge_orientation BR;
+      self#update_edge_orientation DB;
+      self#update_edge_orientation BL;
 
 
     method b_prime () =
@@ -442,22 +446,15 @@ class rubiks_cube =
       edges.(get_edge_from_enum DB) <- edges.(get_edge_from_enum BR);
       edges.(get_edge_from_enum BR) <- hold_edge;
 
-      self#update_corner_orientation ULB 1;
+      self#update_corner_orientation ULB 2;
       self#update_corner_orientation URB 2;
-      self#update_corner_orientation DRB 1;
+      self#update_corner_orientation DRB 2;
       self#update_corner_orientation DLB 2;
 
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum UB).edge) lxor 1 in
-      edges.(get_edge_from_enum UB) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum BL).edge) lxor 1 in
-      edges.(get_edge_from_enum BL) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum DB).edge) lxor 1 in
-      edges.(get_edge_from_enum DB) <- {edge = get_edge_from_index new_edge; orientation = 0};
-
-      let new_edge = get_edge_from_enum (edges.(get_edge_from_enum BR).edge) lxor 1 in
-      edges.(get_edge_from_enum BR) <- {edge = get_edge_from_index new_edge; orientation = 0};
+      self#update_edge_orientation UB;
+      self#update_edge_orientation BR;
+      self#update_edge_orientation DB;
+      self#update_edge_orientation BL;
 
 
     method b2 () =
@@ -523,15 +520,54 @@ class rubiks_cube =
       edges.(get_edge_from_enum DR) <- edges.(get_edge_from_enum DL);
       edges.(get_edge_from_enum DL) <- hold_edge;
 
+
     method show_cube () = 
-      for face = 0 to 5 do 
-        (* print_int (int_of_face face) ; *)
-        for row = 0 to 2 do
-          for col = 0 to 2 do 
-            print_string (string_of_color (self#get_facette_color (face_from_int face) row col)) ;
-            print_string " " ;
-          done ;
+      let spaces = "           " in
+      print_newline ();
+
+      for row = 0 to 2 do 
+        print_string spaces;
+        for col = 0 to 2 do 
+          print_string (string_of_color (self#get_facette_color UP row col)) ;
+          print_string "  " ;
         done;
+        print_newline ();
       done;
 
+      print_newline ();
+
+      for row = 0 to 2 do 
+        for face = 1 to 4 do
+          for col = 0 to 2 do 
+            print_string (string_of_color (self#get_facette_color (face_from_int face) row col)) ;
+            print_string "  " ;
+          done;
+          print_string "  " ;
+        done;
+        print_newline ();
+      done;
+
+      print_newline ();
+
+      for row = 0 to 2 do 
+        print_string spaces ;
+        for col = 0 to 2 do 
+          print_string (string_of_color (self#get_facette_color DOWN row col)) ;
+          print_string "  " ;
+        done;
+        print_newline ();
+      done;
+
+    method print_corners = 
+      fun () -> for i = 0 to 7 do
+        print_int i;
+        print_string "->";
+        let colors = self#get_corner_colors i in
+        for j = 0 to 2 do
+          print_string (string_of_color colors.(j));
+          print_string " ";
+        done;
+        print_string "  ";
+      done;
   end;;
+
