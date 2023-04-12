@@ -1,5 +1,5 @@
-open Utils_module.Types;;
-open Utils_module.Utils;;
+open Utils_module.Types
+open Utils_module.Utils
 
 class rubiks_cube = 
   object (self)
@@ -520,72 +520,5 @@ class rubiks_cube =
       edges.(get_edge_from_enum DR) <- edges.(get_edge_from_enum DL);
       edges.(get_edge_from_enum DL) <- hold_edge;
 
-
-    method find_edge_index edge_enum = 
-      let rec find_edge_index_helper edge_enum index = 
-        if index >= Array.length edges then failwith "Value not found in array"
-        else if edges.(index).edge = edge_enum then index
-        else find_edge_index_helper edge_enum (index + 1)
-      in
-      find_edge_index_helper edge_enum 0;
-
-    
-    method find_corner_index corner_enum = 
-      let rec find_corner_index_helper corner_enum index = 
-        if index >= Array.length corners then failwith "Value not found in array"
-        else if corners.(index).corner = corner_enum then index
-        else find_corner_index_helper corner_enum (index + 1)
-      in
-      find_corner_index_helper corner_enum 0;
-
-
-    method show_cube () = 
-      let spaces = "           " in
-      print_newline ();
-
-      for row = 0 to 2 do 
-        print_string spaces;
-        for col = 0 to 2 do 
-          print_string (string_of_color (self#get_facette_color UP row col)) ;
-          print_string "  " ;
-        done;
-        print_newline ();
-      done;
-
-      print_newline ();
-
-      for row = 0 to 2 do 
-        for face = 1 to 4 do
-          for col = 0 to 2 do 
-            print_string (string_of_color (self#get_facette_color (face_from_int face) row col)) ;
-            print_string "  " ;
-          done;
-          print_string "  " ;
-        done;
-        print_newline ();
-      done;
-
-      print_newline ();
-
-      for row = 0 to 2 do 
-        print_string spaces ;
-        for col = 0 to 2 do 
-          print_string (string_of_color (self#get_facette_color DOWN row col)) ;
-          print_string "  " ;
-        done;
-        print_newline ();
-      done;
-
-    method print_corners = 
-      fun () -> for i = 0 to 7 do
-        print_int i;
-        print_string "->";
-        let colors = self#get_corner_colors i in
-        for j = 0 to 2 do
-          print_string (string_of_color colors.(j));
-          print_string " ";
-        done;
-        print_string "  ";
-      done;
   end;;
 

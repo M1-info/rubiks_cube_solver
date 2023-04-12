@@ -2,12 +2,13 @@ open Types
 
 let string_of_color color = 
   match color with
-  | RED -> "R"
+  | RED ->    "R"
   | YELLOW -> "Y"
-  | BLUE -> "B"
-  | GREEN -> "G"
+  | BLUE ->   "B"
+  | GREEN ->  "G"
   | ORANGE -> "O"
-  | WHITE -> "W";;
+  | WHITE ->  "W";;
+
 
 let color_from_int color = 
   match color with
@@ -19,14 +20,16 @@ let color_from_int color =
   | 5 -> ORANGE
   | _ -> failwith "Invalid color";;
 
+
 let int_of_face face = 
   match face with
   | UP    ->  0
-  | LEFT ->   1
+  | LEFT  ->  1
   | FRONT ->  2
-  | RIGHT  -> 3
+  | RIGHT ->  3
   | BACK  ->  4
   | DOWN  ->  5;;
+
 
 let face_from_int face = 
   match face with
@@ -38,6 +41,7 @@ let face_from_int face =
   | 5 ->  DOWN
   | _ -> failwith "Invalid face";;
 ;;
+
 
 let get_edge_from_index index = 
   match index with
