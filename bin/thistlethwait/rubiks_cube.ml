@@ -19,6 +19,9 @@ class rubiks_cube =
         centers.(i) <- {color = color_from_int(i)}
       done;
 
+    method get_edges () = edges
+    method get_corners () = corners
+
     method get_edge_colors index =
       let colors = Array.make 2 WHITE in
       let edge = edges.(index) in
@@ -543,6 +546,7 @@ class rubiks_cube =
       | "d_2"     -> self#d_2 ()
       | _ -> ()
 
+      
     method scramble num_moves =
       Random.self_init ();
       let nb_moves = Array.length all_moves in 

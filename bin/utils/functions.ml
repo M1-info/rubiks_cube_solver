@@ -16,3 +16,11 @@ let find_corner_index corners corner_enum =
     else find_corner_index_helper corner_enum (index + 1)
   in
   find_corner_index_helper corner_enum 0;;
+
+
+let pow a b = 
+  let rec pow_helper a b acc = 
+    if b = 0 then acc
+    else pow_helper a (b - 1) (acc * a)
+  in
+  pow_helper a b 1;;

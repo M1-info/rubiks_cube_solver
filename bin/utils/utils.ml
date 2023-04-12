@@ -75,6 +75,22 @@ let get_edge_from_enum enum =
   | DB -> 10
   | DR -> 11;;
 
+  
+let get_edge_index edge = 
+  match edge.edge with
+  | UB -> 0
+  | UR -> 1
+  | UF -> 2
+  | UL -> 3
+  | FR -> 4
+  | FL -> 5
+  | BL -> 6
+  | BR -> 7
+  | DF -> 8
+  | DL -> 9
+  | DB -> 10
+  | DR -> 11;;
+
 
 let get_corner_from_index index = 
   match index with
@@ -132,4 +148,5 @@ let move_to_string move =
   | FPRIME  -> "f_prime"
   | B       -> "b"
   | B2      -> "b_2"
-  | BPRIME  -> "b_prime";;
+  | BPRIME  -> "b_prime"
+  | None    -> "";;
