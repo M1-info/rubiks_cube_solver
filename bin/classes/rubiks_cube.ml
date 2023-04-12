@@ -1,5 +1,6 @@
 open Utils_module.Types
 open Utils_module.Utils
+open Utils_module.Moves_store
 
 class rubiks_cube = 
   object (self)
@@ -457,7 +458,7 @@ class rubiks_cube =
       self#update_edge_orientation BL;
 
 
-    method b2 () =
+    method b_2 () =
       let hold_corner = corners.(get_corner_from_enum ULB) in
       corners.(get_corner_from_enum ULB) <- corners.(get_corner_from_enum DRB);
       corners.(get_corner_from_enum DRB) <- hold_corner;
@@ -519,6 +520,48 @@ class rubiks_cube =
       let hold_edge = edges.(get_edge_from_enum DR) in
       edges.(get_edge_from_enum DR) <- edges.(get_edge_from_enum DL);
       edges.(get_edge_from_enum DL) <- hold_edge;
+
+    method apply_move move_string = 
+      match move_string with 
+      | "u"       -> self#u ()
+      | "u_prime" -> self#u_prime ()
+      | "u_2"     -> self#u_2 ()
+      | "r"       -> self#r ()
+      | "r_prime" -> self#r_prime ()
+      | "r_2"     -> self#r_2 ()
+      | "f"       -> self#f ()
+      | "f_prime" -> self#f_prime ()
+      | "f_2"     -> self#f_2 ()
+      | "l"       -> self#l ()
+      | "l_prime" -> self#l_prime ()
+      | "l_2"     -> self#l_2 ()
+      | "b"       -> self#b ()
+      | "b_prime" -> self#b_prime ()
+      | "b_2"     -> self#b_2 ()
+      | "d"       -> self#d ()
+      | "d_prime" -> self#d_prime ()
+      | "d_2"     -> self#d_2 ()
+      | _ -> ()
+
+    method scramble num_moves =
+      Random.self_init ();
+      let nb_moves = Array.length all_moves in 
+      let rec scramble_aux index =
+        if index = num_moves then ()
+        else (
+          let random = Random.int nb_moves in
+          let move = all_moves.(random) in
+          let move_string = move_to_string move in
+          print_string move_string;
+          print_string " ";
+          self#apply_move move_string;
+          scramble_aux (index + 1)
+        )
+      in scramble_aux 0;
+          
+        
+
+
 
   end;;
 

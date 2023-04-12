@@ -1,7 +1,7 @@
 type color = RED | BLUE | WHITE | GREEN | YELLOW | ORANGE
 type face = UP | LEFT | FRONT | RIGHT | BACK | DOWN
 
-type move = 
+type moves = 
     U | UPRIME | U2 | 
     D | DPRIME | D2 | 
     F | FPRIME | F2 | 

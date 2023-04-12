@@ -111,3 +111,25 @@ let corner_to_string corner =
   | DLF -> "DLF"
   | DLB -> "DLB"
   | DRB -> "DRB";;
+
+
+let move_to_string move = 
+  match move with
+  | U       -> "u"
+  | U2      -> "u_2"
+  | UPRIME  -> "u_prime'"
+  | D       -> "d"
+  | D2      -> "d_2"
+  | DPRIME  -> "d_prime"
+  | L       -> "l"
+  | L2      -> "l_2"
+  | LPRIME  -> "l_prime"
+  | R       -> "r"
+  | R2      -> "r_2"
+  | RPRIME  -> "r_prime"
+  | F       -> "f"
+  | F2      -> "f_2"
+  | FPRIME  -> "f_prime"
+  | B       -> "b"
+  | B2      -> "b_2"
+  | BPRIME  -> "b_prime";;
