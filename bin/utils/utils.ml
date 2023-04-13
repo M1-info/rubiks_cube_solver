@@ -75,21 +75,13 @@ let get_edge_from_enum enum =
   | DB -> 10
   | DR -> 11;;
 
-  
+
 let get_edge_index edge = 
-  match edge.edge with
-  | UB -> 0
-  | UR -> 1
-  | UF -> 2
-  | UL -> 3
-  | FR -> 4
-  | FL -> 5
-  | BL -> 6
-  | BR -> 7
-  | DF -> 8
-  | DL -> 9
-  | DB -> 10
-  | DR -> 11;;
+  get_edge_from_enum edge.edge;;
+
+
+let get_edge_enum edge = 
+  edge.edge;;
 
 
 let get_corner_from_index index = 
@@ -115,6 +107,13 @@ let get_corner_from_enum enum =
   | DLB -> 5
   | DRB -> 6
   | DRF -> 7;;
+
+
+let get_corner_index corner = 
+  get_corner_from_enum corner.corner;;
+
+let get_corner_enum corner = 
+  corner.corner;;
   
 
 let corner_to_string corner = 

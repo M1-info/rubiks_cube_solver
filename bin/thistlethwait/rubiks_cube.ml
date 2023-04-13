@@ -4,10 +4,32 @@ open Utils_module.Moves_store
 
 class rubiks_cube = 
   object (self)
+
+    (* 
+      The cube is represented by 12 edges, 8 corners and 6 centers
+      Each edge is represented by an edge enum and an orientation
+      Each corner is represented by a corner enum and an orientation
+      Each center is represented by a color enum
+
+      Orientation are based from the solved state
+      The orientation of an edge is 0 (not flipped) or 1 (flipped)
+      The orientation of a corner is 0, 1 or 2
+
+      We prefer to store the edge and corner enums instead of the index
+      because it's easier to understand and to manipulate
+      but we need to convert them to index to access the array
+      so we have a function some functions to do that (see utils/utils.ml)
+    *)
+
     val mutable edges = Array.make 12 {edge = UB; orientation = 0}
     val mutable corners = Array.make 8 {corner = ULF; orientation = 0}
     val mutable centers = Array.make 6 {color = RED}
+
+    (* Getters *)
+    method get_edges () = edges
+    method get_corners () = corners
     
+    (* Initialize the cube at the solved state *)
     method init () = 
       for i = 0 to 11 do
         edges.(i) <- {edge = get_edge_from_index(i); orientation = 0}
@@ -19,9 +41,10 @@ class rubiks_cube =
         centers.(i) <- {color = color_from_int(i)}
       done;
 
-    method get_edges () = edges
-    method get_corners () = corners
-
+    (* 
+      Return array with the two edge colors
+      If the orientation of the edge is flipped, the colors are flipped   
+    *)
     method get_edge_colors index =
       let colors = Array.make 2 WHITE in
       let edge = edges.(index) in
@@ -49,6 +72,10 @@ class rubiks_cube =
       | DR -> set_colors ORANGE   GREEN;    colors;
 
 
+    (* 
+      Return array with the three corner colors
+      If the orientation of the corner is flipped, the colors are flipped too
+    *)
     method get_corner_colors index =
       let colors = Array.make 3 WHITE in
       let corner = corners.(index) in
@@ -106,6 +133,11 @@ class rubiks_cube =
       if is_center then centers.(int_of_face face).color
       else if is_out_bound then failwith "Invalid row or col"
       else (
+        (* 
+          Get corner colors return an array, 
+          so we need to get the right index based on which face we are looking at
+          Ex : UP, 0, 0 -> ULB -> 0 (U is for up)
+        *)
         match face, row, col with 
         | UP, 0, 0 -> (self#get_corner_colors (get_corner_from_enum ULB)).(0)
         | UP, 0, 1 -> (self#get_edge_colors (get_edge_from_enum UB)).(0)
@@ -176,17 +208,29 @@ class rubiks_cube =
         else check_corners (index + 1)
       in check_edge 0 && check_corners 0
 
-    
+
+    (*
+      In some moves, the orientation of the corners. 
+      This method updates the orientation of the corners.   
+    *)
     method update_corner_orientation corner_enum delta = 
       let corner = corners.(get_corner_from_enum corner_enum) in
       corner.orientation <- (corner.orientation + delta) mod 3;
 
 
+    (*
+      In some moves, the orientation of the edges. 
+      This method updates the orientation of the edges.
+      We use a bit to represent the orientation. 
+      So we use xor to update the orientation to make it faster.
+    *)
     method update_edge_orientation edge_enum = 
       let edge = edges.(get_edge_from_enum edge_enum) in
       let orientation = edge.orientation in
       edge.orientation <- orientation lxor 1;
 
+
+    (* Cube moves *)
     
     method u () = 
       let hold_corner = corners.(get_corner_from_enum ULF) in
@@ -546,7 +590,7 @@ class rubiks_cube =
       | "d_2"     -> self#d_2 ()
       | _ -> ()
 
-      
+
     method scramble num_moves =
       Random.self_init ();
       let nb_moves = Array.length all_moves in 
