@@ -1,7 +1,6 @@
 open Utils_module.Utils
 open Utils_module.Functions
-(* open Stdint *)
-(* open Rubiks_cube *)
+open Utils_module.Types
 
 class pattern_database = 
   object (self)
@@ -74,30 +73,9 @@ class pattern_database =
 
   
   method get_index_group_2 edges corners = 
-    let nb_edges = Array.length edges in
     let nb_corners = Array.length corners in
 
-    let compute_edge_combo () = 
-      let edges_combos = Array.make 4 0 in
-      let rec compute_edge_combo_aux edge_index combo_index = 
-        if edge_index >= nb_edges || combo_index >= 4 then ()
-        else (
-          let edge_index = find_edge_index_from_edge edges edges.(edge_index) in 
-          if (
-            edge_index = get_edge_from_enum FR || 
-            edge_index = get_edge_from_enum FL ||
-            edge_index = get_edge_from_enum BR ||
-            edge_index = get_edge_from_enum BL
-          ) then (
-            edges_combos.(combo_index) <- edge_index;
-            compute_edge_combo_aux (edge_index + 1) (combo_index + 1);
-          )else (
-            compute_edge_combo_aux (edge_index + 1) combo_index;
-          )
-        ) in compute_edge_combo_aux 0 0;
-      edges_combos;
-    in
-    let rank = combinaison_indexer (compute_edge_combo ()) (12) (4) in
+    let rank = combinaison_indexer (compute_edge_combo edges [| FR; FL; BR; BL |]) 12 4 in
 
     let orientation_corners_num = Array.fold_left ( fun acc corner ->
       if get_corner_enum corner = DRF then acc 
@@ -108,6 +86,19 @@ class pattern_database =
       )
     ) 0 corners in
 
+    (* 2187 = 3^7 (7 are the corners and 3 because they are indexed in base 3) *)
     let index = (rank * 2187) + orientation_corners_num in
     index;
-  end;;
+
+
+  method get_index_group_3 edges corners =
+    let pairs = [| ULB , URF ; DLF , DRB ; URB , ULF ; DLB , DRF |] in
+    let corners_pairs = get_tetrad_pairs corners pairs in 
+    let corners_rank = pair_indexer corners_pairs in 
+    let edges_map = [| UB; UR; UF; UL; DF; DL; DB; DR |] in 
+    let edges_rank = combinaison_indexer (compute_edge_combo edges [| UB; UF; DF; DB |]) 12 4 in
+    let parity = check_corners_parity corners in
+
+    ((edges_rank * 2520 + corners_rank) * 2 + !parity);
+
+end;;

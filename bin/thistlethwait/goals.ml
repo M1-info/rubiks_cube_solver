@@ -44,8 +44,6 @@ let goal_1_to_2 edges corners =
 
 let goal_2_to_3 edges corners =
 
-  (*  *)
-
   let index = find_corner_index corners ULB in
   let first_pair = not (index <> get_corner_from_enum ULB && index <> get_corner_from_enum URF) in
   let index = find_corner_index corners URF in
@@ -61,16 +59,7 @@ let goal_2_to_3 edges corners =
   let index = find_corner_index corners ULF in
   let third_pair_inverse = not (index <> get_corner_from_enum ULF && index <> get_corner_from_enum URB) in
 
-  let nb_corners = Array.length corners in
-  let rec check_parity parity i j = 
-    if i = nb_corners then parity
-    else (
-      let result = if (corners.(i).orientation < corners.(j).orientation) then 1 else 0 in
-      parity := !parity lxor result;
-      if j = nb_corners - 1 then check_parity parity (i + 1) 0
-      else check_parity parity i (j + 1)
-    ) in 
-  let is_parity_even = check_parity (ref 0) 0 1 = ref 0 in
+  let is_parity_even = check_corners_parity corners = ref 0 in
 
   if (
     first_pair && second_pair && first_pair_inverse && second_pair_inverse && third_pair && third_pair_inverse &&

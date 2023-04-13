@@ -607,9 +607,5 @@ class rubiks_cube =
         )
       in scramble_aux 0;
           
-        
-
-
-
   end;;
 

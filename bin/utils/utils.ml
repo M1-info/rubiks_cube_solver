@@ -112,6 +112,7 @@ let get_corner_from_enum enum =
 let get_corner_index corner = 
   get_corner_from_enum corner.corner;;
 
+  
 let get_corner_enum corner = 
   corner.corner;;
   
