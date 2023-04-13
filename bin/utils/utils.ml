@@ -1,17 +1,6 @@
 open Types
 
-let string_of_color color = 
-  match color with
-  | RED ->    "R"
-  | YELLOW -> "Y"
-  | BLUE ->   "B"
-  | GREEN ->  "G"
-  | ORANGE -> "O"
-  | WHITE ->  "W";;
-
-
-let color_from_int color = 
-  match color with
+let color_of_int = function
   | 0 -> RED
   | 1 -> BLUE
   | 2 -> WHITE
@@ -20,9 +9,16 @@ let color_from_int color =
   | 5 -> ORANGE
   | _ -> failwith "Invalid color";;
 
+let string_of_color = function 
+  | RED ->    "R"
+  | YELLOW -> "Y"
+  | BLUE ->   "B"
+  | GREEN ->  "G"
+  | ORANGE -> "O"
+  | WHITE ->  "W";;
 
-let int_of_face face = 
-  match face with
+
+let int_of_face = function
   | UP    ->  0
   | LEFT  ->  1
   | FRONT ->  2
@@ -31,8 +27,7 @@ let int_of_face face =
   | DOWN  ->  5;;
 
 
-let face_from_int face = 
-  match face with
+let face_of_int = function
   | 0 ->  UP
   | 1 ->  LEFT
   | 2 ->  FRONT
@@ -43,8 +38,7 @@ let face_from_int face =
 ;;
 
 
-let get_edge_from_index index = 
-  match index with
+let edge_enum_of_int = function
   | 0 ->  UB 
   | 1 ->  UR 
   | 2 ->  UF 
@@ -60,8 +54,7 @@ let get_edge_from_index index =
   | _ -> failwith "Invalid edge index";;
 
 
-let get_edge_from_enum enum = 
-  match enum with
+let int_of_edge_enum = function 
   | UB -> 0
   | UR -> 1
   | UF -> 2
@@ -76,16 +69,7 @@ let get_edge_from_enum enum =
   | DR -> 11;;
 
 
-let get_edge_index edge = 
-  get_edge_from_enum edge.edge;;
-
-
-let get_edge_enum edge = 
-  edge.edge;;
-
-
-let get_corner_from_index index = 
-  match index with
+let corner_enum_of_int = function
   | 0 -> ULB 
   | 1 -> URB 
   | 2 -> URF 
@@ -97,8 +81,7 @@ let get_corner_from_index index =
   | _ -> failwith "Invalid corner index";;
 
 
-let get_corner_from_enum enum =
-  match enum with
+let int_of_corner_enum = function
   | ULB -> 0
   | URB -> 1
   | URF -> 2
@@ -109,16 +92,7 @@ let get_corner_from_enum enum =
   | DRF -> 7;;
 
 
-let get_corner_index corner = 
-  get_corner_from_enum corner.corner;;
-
-  
-let get_corner_enum corner = 
-  corner.corner;;
-  
-
-let corner_to_string corner = 
-  match corner with
+let string_of_corner = function 
   | URF -> "URF"
   | ULF -> "ULF"
   | ULB -> "ULB"
@@ -129,8 +103,7 @@ let corner_to_string corner =
   | DRB -> "DRB";;
 
 
-let move_to_string move = 
-  match move with
+let string_of_move = function
   | U       -> "u"
   | U2      -> "u_2"
   | UPRIME  -> "u_prime'"

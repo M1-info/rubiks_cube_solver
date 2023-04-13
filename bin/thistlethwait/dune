@@ -1,4 +1,0 @@
-(library
- (name classes_module)
- (modules rubiks_cube goals solver pattern_database)
- (libraries utils_module stdint))

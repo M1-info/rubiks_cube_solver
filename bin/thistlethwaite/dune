@@ -1,0 +1,4 @@
+(library
+ (name classes_module)
+ (modules rubiks_cube goals solver pattern_database indexers)
+ (libraries utils_module stdint extlib))
