@@ -1,5 +1,4 @@
 open Types
-(* open Stdint *)
 
 let check_corners_parity (corners: corner array) = 
   let nb_corners = Array.length corners in
@@ -15,6 +14,10 @@ let check_corners_parity (corners: corner array) =
   parity;;
 
 
+let compare_nodes n1 n2 = 
+  n1.est_move > n2.est_move;;
+
+
 let load_file filename =
   let chan = open_in_bin filename in
   let size = in_channel_length chan in
@@ -25,7 +28,6 @@ let load_file filename =
     done;
     assert false with End_of_file ->
       close_in chan;
-      let _ = print_int (List.length !data) in
       let data = Array.of_list (List.rev !data) in
       {data = data; size = size};;
 

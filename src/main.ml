@@ -1,14 +1,29 @@
 (* open Classes_module.Rubiks_cube *)
-open Classes_module.Pattern_database 
+(* open Classes_module.Pattern_database  *)
 (* open Stdint *)
 (* open Classes_module.Solver *)
 
-let pattern_database = new pattern_database ;;
+open Utils_module.Priority_queue
+
+let p_queue = new priority_queue;;
+
+print_newline ();;
+let _ = p_queue#push 6;;
+let _ = p_queue#push 3;;
+let _ = p_queue#push 2;;
+let _ = p_queue#push 1;;
+let _ = p_queue#push 6;;
+
+let values = p_queue#get_queue ();;
+
+Queue.iter (fun x -> print_int x; print_newline ()) values;;
+
+(* let pattern_database = new pattern_database ;;
 pattern_database#init;;
 
 let g1 = pattern_database#get_group_1 ();;
 
-let _ = print_char g1.data.(664);;
+let _ = print_int (pattern_database#get_num_moves 2044 g1);; *)
 
 (* let _ = print_newline ();;
 let _ = print_int g1.size;;

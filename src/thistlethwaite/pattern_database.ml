@@ -15,7 +15,7 @@ class pattern_database =
     Printf.printf "Loading group 1 : \n";
     self#load_group_1;
     Printf.printf "Group 1 loaded !\n";
-    (* Printf.printf "Loading group 2 : \n";
+    Printf.printf "Loading group 2 : \n";
     self#load_group_2;
     Printf.printf "Group 2 loaded !\n";
     Printf.printf "Loading group 3 : \n";
@@ -23,19 +23,33 @@ class pattern_database =
     Printf.printf "Group 3 loaded !\n";
     Printf.printf "Loading group 4 : \n";
     self#load_group_4;
-    Printf.printf "Pattern databases loaded !\n"; *)
+    Printf.printf "Pattern databases loaded !\n";
 
   method get_group_1 () = group_1;
   method get_group_2 () = group_2;
   method get_group_3 () = group_3;
   method get_group_4 () = group_4;
 
-  method load_group_1 = group_1 <- load_file "bin/databases/thistlethwiateG1.pdb";
-  method load_group_2 = group_2 <- load_file "bin/databases/thistlethwiateG2.pdb";
-  method load_group_3 = group_3 <- load_file "bin/databases/thistlethwiateG3.pdb";
-  method load_group_4 = group_4 <- load_file "bin/databases/thistlethwiateG4.pdb";
+  method load_group_1 = group_1 <- load_file "src/databases/thistlethwiateG1.pdb";
+  method load_group_2 = group_2 <- load_file "src/databases/thistlethwiateG2.pdb";
+  method load_group_3 = group_3 <- load_file "src/databases/thistlethwiateG3.pdb";
+  method load_group_4 = group_4 <- load_file "src/databases/thistlethwiateG4.pdb";
 
-  
+  method get_group = function
+    | 1 -> self#get_group_1 ()
+    | 2 -> self#get_group_2 ()
+    | 3 -> self#get_group_3 ()
+    | 4 -> self#get_group_4 ()
+    | _ -> failwith "Invalid group number"
+
+  method get_index group cube = 
+    match group with 
+    | 1 -> self#get_index_group_1 cube
+    | 2 -> self#get_index_group_2 cube
+    | 3 -> self#get_index_group_3 cube
+    | 4 -> self#get_index_group_4 cube
+    | _ -> failwith "Invalid group number"
+
   (*
     With a cube state, we compute the index of the pattern database of the group 1
     For the group 1 we need to solve the edges of the cube.
@@ -197,5 +211,12 @@ class pattern_database =
 
     (* 96 = 4!*4 *)
     edges_rank * 96 + corner_rank;
+
+  method get_num_moves index group = 
+    let i = index / 2 in
+    let value = group.data.(i) in
+
+    if index mod 2 = 0 then (int_of_char value) land 0x0f
+    else ((int_of_char value) lsr 4);
 
 end;;

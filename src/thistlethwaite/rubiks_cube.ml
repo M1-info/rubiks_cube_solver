@@ -27,6 +27,9 @@ class rubiks_cube =
     (* Getters *)
     method get_edges () = edges
     method get_corners () = corners
+    (* Setters *)
+    method set_edges edg = edges <- edg
+    method set_corners corn = corners <- corn
     
     (* Initialize the cube at the solved state *)
     method init () = 

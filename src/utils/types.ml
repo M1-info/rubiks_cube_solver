@@ -1,5 +1,4 @@
-(* open BitSet *)
-(* open Stdint *)
+open Stdint
 
 type color = RED | BLUE | WHITE | GREEN | YELLOW | ORANGE
 type face = UP | LEFT | FRONT | RIGHT | BACK | DOWN
@@ -23,13 +22,25 @@ type corner = {c_enum: corner_enum; mutable orientation: int}
 type edge = {e_enum: edge_enum; mutable orientation: int}
 type center = {color: color}
 
-(* type database = {
-    size: int;
-    nb_elements: int;
-    data: BitSet.t array;
-} *)
+type cube = {
+    corners: corner array;
+    edges: edge array;
+}
 
 type database = {
     size: int;
     data: char array;
 }
+type node = {
+    cube: cube;
+    move : move;
+    depth: Uint8.t;
+}
+
+type prioritized_move = {
+    cube: cube;
+    move : move;
+    est_move: Uint8.t;
+}
+
+(* type 't priority_queue = 't Queue.t *)

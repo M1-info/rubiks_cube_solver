@@ -1,5 +1,0 @@
-(library
- (name utils_module)
- (modules utils types functions prints moves_store moves_pruner)
- (libraries stdint extlib)
- )
