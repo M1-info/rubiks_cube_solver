@@ -1,3 +1,6 @@
+(* open BitSet *)
+(* open Stdint *)
+
 type color = RED | BLUE | WHITE | GREEN | YELLOW | ORANGE
 type face = UP | LEFT | FRONT | RIGHT | BACK | DOWN
 
@@ -19,3 +22,14 @@ type edge_enum =
 type corner = {c_enum: corner_enum; mutable orientation: int}
 type edge = {e_enum: edge_enum; mutable orientation: int}
 type center = {color: color}
+
+(* type database = {
+    size: int;
+    nb_elements: int;
+    data: BitSet.t array;
+} *)
+
+type database = {
+    size: int;
+    data: char array;
+}

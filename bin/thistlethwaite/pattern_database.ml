@@ -5,23 +5,34 @@ open Indexers
 
 class pattern_database = 
   object (self)
-    val mutable group_1 = []
-    val mutable group_2 = []
-    val mutable group_3 = []
-    val mutable group_4 = []
+    val mutable group_1 = {size= 0; data = [||]}
+    val mutable group_2 = {size= 0; data = [||]}
+    val mutable group_3 = {size= 0; data = [||]}
+    val mutable group_4 = {size= 0; data = [||]}
 
   method init =
+    Printf.printf "Loading pattern databases...\n ";
+    Printf.printf "Loading group 1 : \n";
     self#load_group_1;
+    Printf.printf "Group 1 loaded !\n";
+    (* Printf.printf "Loading group 2 : \n";
     self#load_group_2;
+    Printf.printf "Group 2 loaded !\n";
+    Printf.printf "Loading group 3 : \n";
     self#load_group_3;
+    Printf.printf "Group 3 loaded !\n";
+    Printf.printf "Loading group 4 : \n";
     self#load_group_4;
+    Printf.printf "Pattern databases loaded !\n"; *)
+
+  method get_group_1 () = group_1;
+  method get_group_2 () = group_2;
+  method get_group_3 () = group_3;
+  method get_group_4 () = group_4;
 
   method load_group_1 = group_1 <- load_file "bin/databases/thistlethwiateG1.pdb";
-
   method load_group_2 = group_2 <- load_file "bin/databases/thistlethwiateG2.pdb";
-
   method load_group_3 = group_3 <- load_file "bin/databases/thistlethwiateG3.pdb";
-  
   method load_group_4 = group_4 <- load_file "bin/databases/thistlethwiateG4.pdb";
 
   

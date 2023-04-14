@@ -1,4 +1,5 @@
 open Types
+(* open Stdint *)
 
 let check_corners_parity (corners: corner array) = 
   let nb_corners = Array.length corners in
@@ -15,15 +16,18 @@ let check_corners_parity (corners: corner array) =
 
 
 let load_file filename =
-  let data = ref [] in
   let chan = open_in_bin filename in
+  let size = in_channel_length chan in
+  let data = ref [] in
   try
     while true do
-      data := input_line chan :: !data
+      data := input_char chan :: !data;
     done;
     assert false with End_of_file ->
       close_in chan;
-      List.rev !data;;
+      let _ = print_int (List.length !data) in
+      let data = Array.of_list (List.rev !data) in
+      {data = data; size = size};;
 
 
 let bitset_to_int bitset = 

@@ -1,42 +1,41 @@
-(* open Classes_module.Rubiks_cube
-open Classes_module.Pattern_database *)
-(* open Utils_module.Prints *)
-open Utils_module.Functions
+(* open Classes_module.Rubiks_cube *)
+open Classes_module.Pattern_database 
+(* open Stdint *)
+(* open Classes_module.Solver *)
 
-let bits = BitSet.create 10;;
+let pattern_database = new pattern_database ;;
+pattern_database#init;;
 
-BitSet.set bits 0;;
+let g1 = pattern_database#get_group_1 ();;
 
-BitSet.set bits 1;;
-
-BitSet.set bits 3;;
+let _ = print_char g1.data.(664);;
 
 (* let _ = print_newline ();;
-let _ = print_int (BitSet.count bits);;
+let _ = print_int g1.size;;
 let _ = print_newline ();;
-let enum = BitSet.enum bits;;
-let _ = Enum.iter (fun x -> print_int x; print_newline ()) enum;; *)
+let _ = print_int (Array.length g1.data);;
 
 let _ = print_newline ();;
-let _ = print_int (bitset_to_int bits);; 
+let _ = print_string "Group 1 : ";; *)
+
+(* Array.iter (fun x -> print_string (Uint8.to_string x); print_newline ()) g1.data;; *)
+(* Array.iter (fun x -> print_string (Uint8.to_string x); print_newline ()) g1.data;; *)
 
 
-(* let database = new pattern_database ;;
-database#init ;;
 
-let cube = new rubiks_cube ;;
-cube#init () ;;
-cube#scramble 100 ;;
+(* let main () = 
+  let cube = new rubiks_cube in
+  cube#scramble 100;
 
-let _ = print_int (database#get_index_group_1 (cube#get_edges ()));; *)
+  let pattern_database = new pattern_database in
+  pattern_database#init; *)
 
+  (* let solver = new solver pattern_database in
 
-(* let cube = new rubiks_cube ;; *)
+  let is_solved = ref false in 
+  let rec solve = function 
+   | true -> ()
+    | false ->  *)
+        (* voir à quel etape on est *)
 
-(* let cube = new rubiks_cube ;;
-cube#init () ;;
-cube#scramble 10 ;; *)
-(* show_cube cube;; *)
-(* cube#b () ;;
-show_cube cube;; *)
 
