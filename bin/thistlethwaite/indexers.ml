@@ -133,3 +133,25 @@ let compute_factorials n k =
   for i = 0 to n - 1 do
     factorials.(i) <- pick (n - 1 - i) (k - 1 - i);
   done;
+  factorials;;
+
+
+let permutations_indexer perm n k = 
+  let factorials = compute_factorials n k in 
+  let ones_lookup = compute_ones_lookup n in
+
+  let lehmer = Array.make k 0 in 
+  let bits_seen = BitSet.create n in
+
+  (lehmer.(0) <- perm.(0);
+  BitSet.set bits_seen (n - 1 - perm.(0)));
+
+  let i = ref (-1) in 
+  Array.fold_left (fun acc _ -> (
+    i := !i + 1;
+    BitSet.set bits_seen (n - 1 - perm.(!i));
+    let ones = ones_lookup.((bitset_to_int bits_seen) lsr (n - perm.(!i))) in
+    lehmer.(!i) <- perm.(!i) - ones;
+    acc + lehmer.(!i) * factorials.(!i);
+  )) 0 lehmer;;
+

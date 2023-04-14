@@ -26,6 +26,12 @@ let load_file filename =
       List.rev !data;;
 
 
+let bitset_to_int bitset = 
+  let enum = BitSet.enum bitset in
+  Enum.map (fun x -> 1 lsl x) enum
+  |> Enum.fold (fun acc x -> acc lor x) 0;;
+
+
 let pow a b = 
   let rec pow_helper a b acc = 
     if b = 0 then acc

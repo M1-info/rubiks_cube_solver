@@ -114,11 +114,11 @@ class pattern_database =
     ((edges_rank * 2520 + corners_rank) * 2 + !parity);
 
 
-  (* method get_index_group_4 (cube: rubiks_cube) = 
+  method get_index_group_4 (cube: rubiks_cube) = 
 
     let edges_map = Array.make 12 0 in
 
-    (* M slice edges *)
+    ((* M slice edges *)
     edges_map.(cube#get_edge_index UB) <- 0;
     edges_map.(cube#get_edge_index UF) <- 1;
     edges_map.(cube#get_edge_index DF) <- 2;
@@ -134,29 +134,57 @@ class pattern_database =
     edges_map.(cube#get_edge_index FR) <- 0;
     edges_map.(cube#get_edge_index FL) <- 1;
     edges_map.(cube#get_edge_index BL) <- 2;
-    edges_map.(cube#get_edge_index BR) <- 3;
+    edges_map.(cube#get_edge_index BR) <- 3);
 
     let m_edges = [| 
       edges_map.(cube#get_edge_index UB);
       edges_map.(cube#get_edge_index UF);
       edges_map.(cube#get_edge_index DF);
       edges_map.(cube#get_edge_index DB);
-    |]
+    |] in
 
     let s_edges = [| 
       edges_map.(cube#get_edge_index UR);
       edges_map.(cube#get_edge_index UL);
       edges_map.(cube#get_edge_index DL);
       edges_map.(cube#get_edge_index DR);
-    |]
+    |] in
 
     let e_edges = [|
       edges_map.(cube#get_edge_index FR);
       edges_map.(cube#get_edge_index FL);
-    |] *)
+    |] in
 
+    let m_rank = permutations_indexer m_edges 4 4 in 
+    let s_rank = permutations_indexer s_edges 4 4 in
+    let e_rank = permutations_indexer e_edges 4 2 in
 
+    let edges_rank = m_rank * 288 + s_rank * 12 + e_rank in 
 
+    let corner_map = Array.make 8 0 in 
 
+    (corner_map.(cube#get_corner_index ULB) <- 0;
+    corner_map.(cube#get_corner_index URF) <- 1;
+    corner_map.(cube#get_corner_index DLF) <- 2;
+    corner_map.(cube#get_corner_index DRB) <- 3;
+
+    corner_map.(cube#get_corner_index URB) <- 0;
+    corner_map.(cube#get_corner_index ULF) <- 1;
+    corner_map.(cube#get_corner_index DLB) <- 2;
+    corner_map.(cube#get_corner_index DRF) <- 3);
+
+    let tetrad_pair = [|
+      corner_map.(cube#get_corner_index ULB);
+      corner_map.(cube#get_corner_index URF);
+      corner_map.(cube#get_corner_index DLF);
+      corner_map.(cube#get_corner_index DRB);
+    |] in
+
+    let corner = corner_map.(cube#get_corner_index URB) in
+    let tetrad_rank = permutations_indexer tetrad_pair 4 4 in
+    let corner_rank = tetrad_rank * 4 + corner in
+
+    (* 96 = 4!*4 *)
+    edges_rank * 96 + corner_rank;
 
 end;;
