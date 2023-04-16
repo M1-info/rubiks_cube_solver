@@ -1,56 +1,65 @@
-(* open Classes_module.Rubiks_cube *)
-(* open Classes_module.Pattern_database  *)
-(* open Stdint *)
-(* open Classes_module.Solver *)
+open Classes_module.Solver
+open Classes_module.Rubiks_cube
+open Classes_module.Pattern_database
+open Classes_module.Goals
+open Utils_module.Utils
+(* open Utils_module.Functions *)
 
-open Utils_module.Priority_queue
+open Utils_module.Moves_store
 
-let p_queue = new priority_queue;;
-
-print_newline ();;
-let _ = p_queue#push 6;;
-let _ = p_queue#push 3;;
-let _ = p_queue#push 2;;
-let _ = p_queue#push 1;;
-let _ = p_queue#push 6;;
-
-let values = p_queue#get_queue ();;
-
-Queue.iter (fun x -> print_int x; print_newline ()) values;;
-
-(* let pattern_database = new pattern_database ;;
-pattern_database#init;;
-
-let g1 = pattern_database#get_group_1 ();;
-
-let _ = print_int (pattern_database#get_num_moves 2044 g1);; *)
-
-(* let _ = print_newline ();;
-let _ = print_int g1.size;;
-let _ = print_newline ();;
-let _ = print_int (Array.length g1.data);;
-
-let _ = print_newline ();;
-let _ = print_string "Group 1 : ";; *)
-
-(* Array.iter (fun x -> print_string (Uint8.to_string x); print_newline ()) g1.data;; *)
-(* Array.iter (fun x -> print_string (Uint8.to_string x); print_newline ()) g1.data;; *)
+let cube = new rubiks_cube;;
+cube#init ();;
+cube#scramble 100;;
+cube#show_cube;;
 
 
+let pattern_database = new pattern_database;;
+pattern_database#init ();;
 
-(* let main () = 
+let goal = get_goal 0;;
+let moves_store = get_moves 0;;
+
+(* let _ = database_indexer pattern_database 0 goal cube moves_store;;
+
+let group = pattern_database#get_group 0;;
+save_file "src/databases/test.pdb" group.data;; *)
+
+
+let moves = ida_star pattern_database cube 0 goal moves_store;;
+
+List.iter (fun x -> print_string (string_of_move x); print_string " ") moves;;
+
+(* 
+let solve_cube () =
   let cube = new rubiks_cube in
-  cube#scramble 100;
-
   let pattern_database = new pattern_database in
-  pattern_database#init; *)
+  pattern_database#init ();
+  (* get user input *)
+  let input = read_line () in
+  print_string input; print_newline ();
+  let solution_moves = ref [] in
+  cube#init ();
+  cube#show_cube;
+  cube#scramble 100;
+  let rec solve_cube_aux = function
+    | 2 -> ()
+    | group_index -> 
+      let goal = get_goal group_index in
+      let moves_store = get_moves group_index in
+      let moves = Solver.ida_star pattern_database cube group_index goal moves_store in
+      solution_moves := moves @ !solution_moves;
+      print_int (List.length !solution_moves);
+      solve_cube_aux (group_index + 1);
+  in solve_cube_aux 0;
+  cube#apply_moves (List.rev (!solution_moves));
+  cube#show_cube;;
 
-  (* let solver = new solver pattern_database in
+let _ = solve_cube ();; *)
 
-  let is_solved = ref false in 
-  let rec solve = function 
-   | true -> ()
-    | false ->  *)
-        (* voir à quel etape on est *)
+  
+  
+      
+
+
 
 

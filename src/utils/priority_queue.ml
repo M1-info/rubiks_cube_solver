@@ -6,20 +6,22 @@ class ['a] priority_queue =
   method get_queue () = queue
   method pop () = Queue.pop queue
   method top () = Queue.top queue
+  method length () = Queue.length queue
+  method is_empty () = Queue.is_empty queue
 
-  method push ?(comparator = (>)) (new_value: 'a) = 
+  method push comparator new_value = 
     if(Queue.length queue = 0) then (
       Queue.push new_value queue;
     ) else (
       let rec push_aux (queue_temp: 'a Queue.t) (element: 'a) = 
         try 
-            if(comparator (Queue.top queue) element) then (
-              Queue.push element queue_temp;
-              push_aux queue_temp (Queue.pop queue);
-            ) else (
-              Queue.push (Queue.pop queue) queue_temp;
-              push_aux queue_temp element;
-            )
+          if(comparator (Queue.top queue) element) then (
+            Queue.push element queue_temp;
+            push_aux queue_temp (Queue.pop queue);
+          ) else (
+            Queue.push (Queue.pop queue) queue_temp;
+            push_aux queue_temp element;
+          )
         with Queue.Empty -> (
           Queue.push element queue_temp;
           queue <- queue_temp;

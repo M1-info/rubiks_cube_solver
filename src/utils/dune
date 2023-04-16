@@ -1,5 +1,5 @@
 (library
  (name utils_module)
- (modules utils types functions prints moves_store moves_pruner priority_queue)
+ (modules utils types functions moves_store moves_pruner priority_queue)
  (libraries stdint extlib)
  )

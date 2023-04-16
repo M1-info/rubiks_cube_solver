@@ -9,14 +9,6 @@ let color_of_int = function
   | 5 -> ORANGE
   | _ -> failwith "Invalid color";;
 
-let string_of_color = function 
-  | RED ->    "R"
-  | YELLOW -> "Y"
-  | BLUE ->   "B"
-  | GREEN ->  "G"
-  | ORANGE -> "O"
-  | WHITE ->  "W";;
-
 
 let int_of_face = function
   | UP    ->  0
@@ -92,6 +84,46 @@ let int_of_corner_enum = function
   | DRF -> 7;;
 
 
+let exponent_of_edge = function
+  | UB -> 10
+  | UR -> 9
+  | UF -> 8
+  | UL -> 7
+  | FR -> 6
+  | FL -> 5
+  | BL -> 4
+  | BR -> 3
+  | DF -> 2
+  | DL -> 1
+  | DB -> 0
+  | DR -> 0;;
+
+let exponent_of_corner = function
+  | ULB -> 6
+  | URB -> 5
+  | URF -> 4
+  | ULF -> 3
+  | DLF -> 2
+  | DLB -> 1
+  | DRB -> 0
+  | DRF -> 0;;
+
+
+let string_of_edge = function
+  | UB -> "UB"
+  | UR -> "UR"
+  | UF -> "UF"
+  | UL -> "UL"
+  | FR -> "FR"
+  | FL -> "FL"
+  | BL -> "BL"
+  | BR -> "BR"
+  | DF -> "DF"
+  | DL -> "DL"
+  | DB -> "DB"
+  | DR -> "DR";;
+
+
 let string_of_corner = function 
   | URF -> "URF"
   | ULF -> "ULF"
@@ -106,7 +138,7 @@ let string_of_corner = function
 let string_of_move = function
   | U       -> "u"
   | U2      -> "u_2"
-  | UPRIME  -> "u_prime'"
+  | UPRIME  -> "u_prime"
   | D       -> "d"
   | D2      -> "d_2"
   | DPRIME  -> "d_prime"
@@ -123,3 +155,12 @@ let string_of_move = function
   | B2      -> "b_2"
   | BPRIME  -> "b_prime"
   | None    -> "";;
+
+
+let string_of_color = function 
+  | RED ->    "R"
+  | YELLOW -> "Y"
+  | BLUE ->   "B"
+  | GREEN ->  "G"
+  | ORANGE -> "O"
+  | WHITE ->  "W";;

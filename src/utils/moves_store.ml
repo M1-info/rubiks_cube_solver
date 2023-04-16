@@ -47,3 +47,10 @@ let g3_moves = [|
   R2
 
  |];;
+
+ let get_moves = function
+  | 0 -> all_moves
+  | 1 -> g1_moves
+  | 2 -> g2_moves
+  | 3 -> g3_moves
+  | _ -> failwith "get_moves: invalid group";;

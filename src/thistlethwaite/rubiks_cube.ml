@@ -25,11 +25,13 @@ class rubiks_cube =
     val mutable centers = Array.make 6  {color = RED}
 
     (* Getters *)
-    method get_edges () = edges
-    method get_corners () = corners
+    method get_edges () = edges;
+    method get_corners () = corners;
+    method get_centers () = centers;
+
     (* Setters *)
-    method set_edges edg = edges <- edg
-    method set_corners corn = corners <- corn
+    method set_edges edg = edges <- edg;
+    method set_corners corn = corners <- corn;
     
     (* Initialize the cube at the solved state *)
     method init () = 
@@ -43,6 +45,47 @@ class rubiks_cube =
         centers.(i) <- {color = color_of_int i}
       done;
       
+    method copy () = 
+      let new_cube = new rubiks_cube in
+      new_cube#init ();
+      new_cube#set_edges (Array.copy edges);
+      new_cube#set_corners (Array.copy corners);
+      new_cube;
+
+    method is_same (cube: rubiks_cube) = 
+      let edges2 = cube#get_edges () in
+      let corners2 = cube#get_corners () in
+      let is_same_edge i = 
+        let edge1 = edges.(i) in
+        let edge2 = edges2.(i) in
+        edge1.e_enum = edge2.e_enum && edge1.orientation = edge2.orientation
+      in
+      let is_same_corner i = 
+        let corner1 = corners.(i) in
+        let corner2 = corners2.(i) in
+        corner1.c_enum = corner2.c_enum && corner1.orientation = corner2.orientation
+      in
+      let is_same_center i = 
+        let center1 = centers.(i) in
+        let center2 = (cube#get_centers ()).(i) in
+        center1.color = center2.color
+      in
+      let rec loop i = 
+        if i = 12 then true
+        else if is_same_edge i then loop (i+1)
+        else false
+      in
+      let rec loop2 i = 
+        if i = 8 then true
+        else if is_same_corner i then loop2 (i+1)
+        else false
+      in
+      let rec loop3 i = 
+        if i = 6 then true
+        else if is_same_center i then loop3 (i+1)
+        else false
+      in
+      loop 0 && loop2 0 && loop3 0;
 
     (* 
     Return array with the two edge colors
@@ -215,6 +258,14 @@ class rubiks_cube =
         else if corners.(index).c_enum = corner then index
         else get_index (index + 1)
       in get_index 0
+
+
+    method get_edge_orientation index = 
+      edges.(index).orientation;
+
+      
+    method get_corner_orientation index =
+      corners.(index).orientation;
 
     (*
       Return a boolean indicating if the cube is solved or not.
@@ -617,6 +668,10 @@ class rubiks_cube =
       | _ -> ()
 
 
+    method apply_moves moves = 
+      List.iter (fun move -> self#apply_move (string_of_move move)) moves
+
+
     method scramble num_moves =
       Random.self_init ();
       let nb_moves = Array.length all_moves in 
@@ -626,12 +681,48 @@ class rubiks_cube =
           let random = Random.int nb_moves in
           let move = all_moves.(random) in
           let move_string = string_of_move move in
-          print_string move_string;
-          print_string " ";
           self#apply_move move_string;
           scramble_aux (index + 1)
         )
       in scramble_aux 0; 
+
+
+    method show_cube = 
+      let spaces = "           " in
+      print_newline ();
+    
+      for row = 0 to 2 do 
+        print_string spaces;
+        for col = 0 to 2 do 
+          print_string (string_of_color (self#get_facette_color UP row col)) ;
+          print_string "  " ;
+        done;
+        print_newline ();
+      done;
+    
+      print_newline ();
+    
+      for row = 0 to 2 do 
+        for face = 1 to 4 do
+          for col = 0 to 2 do 
+            print_string (string_of_color (self#get_facette_color (face_of_int face) row col)) ;
+            print_string "  " ;
+          done;
+          print_string "  " ;
+        done;
+        print_newline ();
+      done;
+    
+      print_newline ();
+    
+      for row = 0 to 2 do 
+        print_string spaces ;
+        for col = 0 to 2 do 
+          print_string (string_of_color (self#get_facette_color DOWN row col)) ;
+          print_string "  " ;
+        done;
+        print_newline ();
+      done;
           
   end;;
 

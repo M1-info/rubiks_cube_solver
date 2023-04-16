@@ -13,11 +13,6 @@ let check_corners_parity (corners: corner array) =
   let parity = check_corners_parity_aux (ref 0) 0 0 in
   parity;;
 
-
-let compare_nodes n1 n2 = 
-  n1.est_move > n2.est_move;;
-
-
 let load_file filename =
   let chan = open_in_bin filename in
   let size = in_channel_length chan in
@@ -30,6 +25,12 @@ let load_file filename =
       close_in chan;
       let data = Array.of_list (List.rev !data) in
       {data = data; size = size};;
+
+
+let save_file filename data =
+  let chan = open_out_bin filename in
+  Array.iter (fun x -> output_char chan x) data;
+  close_out chan;;
 
 
 let bitset_to_int bitset = 

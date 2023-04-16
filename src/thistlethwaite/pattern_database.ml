@@ -1,29 +1,35 @@
 open Utils_module.Types
 open Utils_module.Functions
+open Utils_module.Utils
 open Rubiks_cube
 open Indexers
 
 class pattern_database = 
   object (self)
-    val mutable group_1 = {size= 0; data = [||]}
-    val mutable group_2 = {size= 0; data = [||]}
-    val mutable group_3 = {size= 0; data = [||]}
-    val mutable group_4 = {size= 0; data = [||]}
+    val mutable group_1 = {size = 0; data = [||]}
+    val mutable group_2 = {size = 0; data = [||]}
+    val mutable group_3 = {size = 0; data = [||]}
+    val mutable group_4 = {size = 0; data = [||]}
 
-  method init =
-    Printf.printf "Loading pattern databases...\n ";
+  method init () =
+    print_newline ();
+    Printf.printf "Loading pattern databases...\n";
     Printf.printf "Loading group 1 : \n";
     self#load_group_1;
     Printf.printf "Group 1 loaded !\n";
+    print_newline ();
     Printf.printf "Loading group 2 : \n";
     self#load_group_2;
     Printf.printf "Group 2 loaded !\n";
+    print_newline ();
     Printf.printf "Loading group 3 : \n";
     self#load_group_3;
     Printf.printf "Group 3 loaded !\n";
+    print_newline ();
     Printf.printf "Loading group 4 : \n";
     self#load_group_4;
     Printf.printf "Pattern databases loaded !\n";
+    print_newline ();
 
   method get_group_1 () = group_1;
   method get_group_2 () = group_2;
@@ -36,18 +42,18 @@ class pattern_database =
   method load_group_4 = group_4 <- load_file "src/databases/thistlethwiateG4.pdb";
 
   method get_group = function
-    | 1 -> self#get_group_1 ()
-    | 2 -> self#get_group_2 ()
-    | 3 -> self#get_group_3 ()
-    | 4 -> self#get_group_4 ()
+    | 0 -> self#get_group_1 ()
+    | 1 -> self#get_group_2 ()
+    | 2 -> self#get_group_3 ()
+    | 3 -> self#get_group_4 ()
     | _ -> failwith "Invalid group number"
 
   method get_index group cube = 
     match group with 
-    | 1 -> self#get_index_group_1 cube
-    | 2 -> self#get_index_group_2 cube
-    | 3 -> self#get_index_group_3 cube
-    | 4 -> self#get_index_group_4 cube
+    | 0 -> self#get_index_group_1 cube
+    | 1 -> self#get_index_group_2 cube
+    | 2 -> self#get_index_group_3 cube
+    | 3 -> self#get_index_group_4 cube
     | _ -> failwith "Invalid group number"
 
   (*
@@ -65,24 +71,22 @@ class pattern_database =
     UL = 128
     FR = 64
     FL = 32
-    BR = 16
-    BL = 8
+    BL = 16
+    BR = 8
     DF = 4
     DL = 2
     DB = 0
   *)
   method get_index_group_1 (cube: rubiks_cube) = 
     let edges = (cube#get_edges ()) in
-    let nb_edges = Array.length edges in
-    let index = Array.fold_left (fun acc edge -> 
+    Array.fold_left (fun acc edge -> 
       if edge.e_enum = DR then acc 
       else (
-        let edge_index = cube#get_edge_index edge.e_enum in 
-        let exponent = Int.abs ((nb_edges - 1) - edge_index) in
-        acc + ((pow 2 exponent) * edge.orientation);
+        let orientation = cube#get_edge_orientation (int_of_edge_enum edge.e_enum) in
+        let exponent = exponent_of_edge edge.e_enum in
+        acc + ((pow 2 exponent) * orientation);
       )
-    ) 0 edges in 
-    index;
+    ) 0 edges;
 
   
   (*
@@ -105,15 +109,13 @@ class pattern_database =
   *)
   method get_index_group_2 (cube: rubiks_cube) = 
     let corners = cube#get_corners () in
-    let nb_corners = Array.length corners in
     let edges_map = Array.map (fun edge -> edge.e_enum) (cube#get_edges ()) in
-    let rank = combinations_indexer (compute_edges_combinations cube edges_map [| FR; FL; BR; BL |]) 12 4 in
+    let rank = combinations_indexer (compute_edges_combinations cube edges_map [| FR; FL; BL; BR |]) 12 4 in
 
     let orientation_corners_num = Array.fold_left ( fun acc corner ->
       if corner.c_enum = DRF then acc 
       else (
-        let index = cube#get_corner_index corner.c_enum in 
-        let exponent = Int.abs ((nb_corners - 1) - index) in
+        let exponent = exponent_of_corner corner.c_enum in
         acc + ((pow 3 exponent) * corner.orientation);
       )
     ) 0 corners in
@@ -216,7 +218,31 @@ class pattern_database =
     let i = index / 2 in
     let value = group.data.(i) in
 
-    if index mod 2 = 0 then (int_of_char value) land 0x0f
+    if index mod 2 <> 0 then (int_of_char value) land 0x0F
     else ((int_of_char value) lsr 4);
+
+
+  method set_num_moves group index num_moves = 
+    let old_num_moves = self#get_num_moves index group in
+
+    if old_num_moves = 0xF then (
+      group.size <- group.size + 1;
+    );
+
+    if (old_num_moves > num_moves) then (
+      let i = index / 2 in
+      let current_value = int_of_char group.data.(i) in
+      if index mod 2 <> 0 then (
+        let new_value = (current_value land 0xF0) lor (num_moves land 0x0F) in
+        group.data.(i) <- char_of_int new_value;
+      )
+      else (
+        let new_value = (num_moves lsl 4) lor (current_value land 0x0F) in
+        group.data.(i) <- char_of_int new_value;
+      );
+      true;
+    )else(
+      false;
+    )
 
 end;;

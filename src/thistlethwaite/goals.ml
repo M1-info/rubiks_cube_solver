@@ -12,13 +12,21 @@ let goal_0_to_1 (cube: rubiks_cube) =
      In our case, we know that a edge is well orientend if its orientation is 0 (0 or 1 for edges)
   *)
 
-  let edges = Array.to_list (cube#get_edges ()) in
+    let is_satisfied = ref true in
+    let edges = Array.to_list (cube#get_edges ()) in
+    for i = 0 to (List.length edges) - 1 do
+      let edge = List.nth edges i in
+      if edge.orientation <> 0 then is_satisfied := false
+    done;
+    !is_satisfied;;
+
+  (* let edges = Array.to_list (cube#get_edges ()) in
 
   let rec is_satisfied_edges acc (edges: edge list) = 
     match edges with
     | [] -> acc
-    | edge::rest -> if edge.orientation <> 0 then is_satisfied_edges false [] else is_satisfied_edges acc rest 
-  in is_satisfied_edges true edges;;
+    | edge::rest -> if edge.orientation = 1 then is_satisfied_edges false [] else is_satisfied_edges acc rest 
+  in is_satisfied_edges true edges;; *)
 
 
   
@@ -103,4 +111,11 @@ let goal_3_to_4 (cube: rubiks_cube) =
                       else is_satisfied_corners acc rest (i + 1)
   in 
   is_satisfied_edges true (Array.to_list edges) 0 && is_satisfied_corners true (Array.to_list corners) 0;; 
-   
+  
+
+let get_goal = function 
+  | 0 -> goal_0_to_1
+  | 1 -> goal_1_to_2
+  | 2 -> goal_2_to_3
+  | 3 -> goal_3_to_4
+  | _ -> failwith "Goal not found";;
