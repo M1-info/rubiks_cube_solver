@@ -1,3 +1,5 @@
+open Stdint
+
 open Utils_module.Types
 open Utils_module.Utils
 open Utils_module.Functions
@@ -11,22 +13,12 @@ let goal_0_to_1 (cube: rubiks_cube) =
      only using U, R, D, L moves. Theses mouvements are called can't flip edges.  
      In our case, we know that a edge is well orientend if its orientation is 0 (0 or 1 for edges)
   *)
-
-    let is_satisfied = ref true in
-    let edges = Array.to_list (cube#get_edges ()) in
-    for i = 0 to (List.length edges) - 1 do
-      let edge = List.nth edges i in
-      if edge.orientation <> 0 then is_satisfied := false
-    done;
-    !is_satisfied;;
-
-  (* let edges = Array.to_list (cube#get_edges ()) in
-
+     
   let rec is_satisfied_edges acc (edges: edge list) = 
     match edges with
     | [] -> acc
-    | edge::rest -> if edge.orientation = 1 then is_satisfied_edges false [] else is_satisfied_edges acc rest 
-  in is_satisfied_edges true edges;; *)
+    | edge::rest -> if edge.orientation = Uint8.one then is_satisfied_edges false [] else is_satisfied_edges true rest 
+  in is_satisfied_edges true (Array.to_list (cube#get_edges ()));;
 
 
   
@@ -44,13 +36,16 @@ let goal_1_to_2 (cube: rubiks_cube) =
   let rec is_satisfied_corners acc (corners: corner list) = 
     match corners with
     | [] -> acc
-    | corner::rest -> if corner.orientation <> 0 then is_satisfied_corners false [] else is_satisfied_corners acc rest 
+    | corner::rest -> if corner.orientation <> Uint8.zero then (is_satisfied_corners false []) 
+                      else (is_satisfied_corners true rest)
   in 
   if (
-    cube#get_edge_index FR > 3 && 
-    cube#get_edge_index FL > 3 &&
-    cube#get_edge_index BR > 3 &&
-    cube#get_edge_index BL > 3 && 
+    (* Check if any E-slice edge is in a E-slice postion *)
+    (cube#get_edge_index FR >= 4 || cube#get_edge_index FR <= 7) && 
+    (cube#get_edge_index FL >= 4 || cube#get_edge_index FL <= 7) &&
+    (cube#get_edge_index BL >= 4 || cube#get_edge_index BL <= 7) &&
+    (cube#get_edge_index BR >= 4 || cube#get_edge_index BR <= 7) &&
+    (* Check if all corners are oriented *)
     is_satisfied_corners true corners
   ) then true else false;;
 
@@ -58,31 +53,76 @@ let goal_1_to_2 (cube: rubiks_cube) =
 let goal_2_to_3 (cube: rubiks_cube) =
 
   let corners = cube#get_corners () in
+  let pair_index = ref 0 in
 
-  let index = cube#get_corner_index ULB in
-  let first_pair = not (index <> int_of_corner_enum ULB && index <> int_of_corner_enum URF) in
-  let index = cube#get_corner_index URF in
-  let first_pair_inverse = not (index <> int_of_corner_enum URF  && index <> int_of_corner_enum ULB) in
+  pair_index := cube#get_corner_index ULB;
+  let first_pair = !pair_index = int_of_corner_enum ULB || !pair_index = int_of_corner_enum URF in
 
-  let index = cube#get_corner_index DLF in
-  let second_pair = not (index <> int_of_corner_enum DLF && index <> int_of_corner_enum DRB) in
-  let index = cube#get_corner_index DRB in
-  let second_pair_inverse = not (index <> int_of_corner_enum DRB && index <> int_of_corner_enum DRF) in
+  pair_index := cube#get_corner_index URF;
+  let first_pair_inverse = !pair_index = int_of_corner_enum URF || !pair_index = int_of_corner_enum ULB in
 
-  let index = cube#get_corner_index URB in
-  let third_pair = not (index <> int_of_corner_enum URB && index <> int_of_corner_enum ULF) in
-  let index = cube#get_corner_index ULF in
-  let third_pair_inverse = not (index <> int_of_corner_enum ULF && index <> int_of_corner_enum URB) in
+  pair_index := cube#get_corner_index DLF;
+  let second_pair = !pair_index = int_of_corner_enum DLF || !pair_index = int_of_corner_enum DRB in
 
-  let is_parity_even = check_corners_parity corners = ref 0 in
+  pair_index := cube#get_corner_index DRB;
+  let second_pair_inverse = !pair_index = int_of_corner_enum DRB || !pair_index = int_of_corner_enum DLF in
+
+  (* let index_urb = cube#get_corner_index URB in
+  let third_pair = index_urb = int_of_corner_enum URB || index_urb = int_of_corner_enum ULF in
+  let index_ulf = cube#get_corner_index ULF in
+  let third_pair_inverse = index_ulf = int_of_corner_enum ULF || index_ulf = int_of_corner_enum URB in *)
+
+  let parity = get_corners_parity corners in
+
+  print_newline ();
+
+  print_string "Parity: ";
+  print_string (string_of_bool (parity = 0));
+  print_newline ();
+
+  print_string "First pair: ";
+  print_string (string_of_bool first_pair);
+  print_newline ();
+
+  print_string "First pair inverse: ";
+  print_string (string_of_bool first_pair_inverse);
+  print_newline ();
+
+  print_string "Second pair: ";
+  print_string (string_of_bool second_pair);
+  print_newline ();
+
+  print_string "Second pair inverse: ";
+  print_string (string_of_bool second_pair_inverse);
+  print_newline ();
+
+  print_string "UB: ";
+  print_string (string_of_bool (cube#get_edge_index UB = 0 || cube#get_edge_index UB = 2 || cube#get_edge_index UB = 8 || cube#get_edge_index UB = 10));
+  print_newline ();
+
+  print_string "UF: ";
+  print_string (string_of_bool (cube#get_edge_index UF = 0 || cube#get_edge_index UF = 2 || cube#get_edge_index UF = 8 || cube#get_edge_index UF = 10));
+  print_newline ();
+  
+  print_string "DF: ";
+  print_string (string_of_bool (cube#get_edge_index DF = 0 || cube#get_edge_index DF = 2 || cube#get_edge_index DF = 8 || cube#get_edge_index DF = 10));
+  print_newline ();
+
+  print_string "DB: ";
+  print_string (string_of_bool (cube#get_edge_index DB = 0 || cube#get_edge_index DB = 2 || cube#get_edge_index DB = 8 || cube#get_edge_index DB = 10));
+  print_newline ();
+
+  print_string "------------------------";
+  print_newline ();
 
   if (
-    first_pair && second_pair && first_pair_inverse && second_pair_inverse && third_pair && third_pair_inverse &&
-    cube#get_edge_index UB > 3 && 
-    cube#get_edge_index UF > 3 &&
-    cube#get_edge_index DB > 3 &&
-    cube#get_edge_index DF > 3 && 
-    is_parity_even
+    first_pair && second_pair && first_pair_inverse && second_pair_inverse && (* third_pair && third_pair_inverse && *)
+    (* Check if any M-slice edge is in a M-slice postion *)
+    (cube#get_edge_index UB = 0 || cube#get_edge_index UB = 2 || cube#get_edge_index UB = 8 || cube#get_edge_index UB = 10) && 
+    (cube#get_edge_index UF = 0 || cube#get_edge_index UF = 2 || cube#get_edge_index UF = 8 || cube#get_edge_index UF = 10) &&
+    (cube#get_edge_index DF = 0 || cube#get_edge_index DF = 2 || cube#get_edge_index DF = 8 || cube#get_edge_index DF = 10) &&
+    (cube#get_edge_index DB = 0 || cube#get_edge_index DB = 2 || cube#get_edge_index DB = 8 || cube#get_edge_index DB = 10) &&
+    parity = 0 
   ) then true else false;;
     
 

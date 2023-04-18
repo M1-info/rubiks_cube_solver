@@ -2,7 +2,6 @@ open ExtLib
 
 open Utils_module.Utils
 open Utils_module.Functions
-open Utils_module.Types
 open Rubiks_cube
 
 let compute_edges_combinations (cube: rubiks_cube) edges edges_enums = 
@@ -27,97 +26,91 @@ let compute_edges_combinations (cube: rubiks_cube) edges edges_enums =
     ) in compute_edges_combinations_aux 0 0;
   edges_combos;;
 
-let combinations_indexer comb n k = 
-  let choises = Array.make_matrix n k 0 in 
+let combinations_indexer combs n k = 
+  let choises = Array.make_matrix (n + 1) (k + 1) 0 in 
+
   for i = 0 to n do
     for j = 0 to k do
       choises.(i).(j) <- combinations i j
     done
   done;
+  
   let rank = ref choises.(n).(k) in
-  Array.iter (fun comb -> 
-      rank := !rank - choises.(n - (comb + 1)).(k - 1);
-  ) comb;
+  for i = 0 to k - 1 do
+    rank := !rank - choises.(n - (combs.(i) + 1)).(k - 1);
+  done;
   !rank - 1;;
 
 
-let compute_tetrad_pairs (cube: rubiks_cube) corners_pair = 
+let compute_tetrad_pair (cube: rubiks_cube) (c1, c2) = 
   let corners = cube#get_corners () in
   let nb_corners = Array.length corners in
-
-  let tetrad_pairs = Array.make 4 (Array.make 2 0) in 
-
-  let rec compute_tetrad_pairs_aux (corners: corner array) index_pair = 
-    if index_pair >= 4 then ()
-    else (
-      let c1, c2 = corners_pair.(index_pair) in
-      let rec compute_tetrad_pair_aux_aux corner_index combo_index c1 c2 = 
-        if corner_index >= nb_corners || combo_index >= 2 then ()
-        else (
-          let current_corner = corners.(corner_index) in
-          let current_corner_index = cube#get_corner_index current_corner.c_enum in
-          if (
-            current_corner_index = int_of_corner_enum c1 || 
-            current_corner_index = int_of_corner_enum c2
-          ) then (
-            tetrad_pairs.(index_pair).(combo_index) <- corner_index;
-            compute_tetrad_pair_aux_aux (corner_index + 1) (combo_index + 1) c1 c2;
-        ) else (
-          compute_tetrad_pair_aux_aux (corner_index + 1) combo_index c1 c2;
-        )
-      ) in compute_tetrad_pair_aux_aux 0 0 c1 c2;
-      compute_tetrad_pairs_aux corners (index_pair + 1);
-    ) in compute_tetrad_pairs_aux corners 0 ;
-  tetrad_pairs;;
+  let combo_index = ref 0 in
+  let tetrad_pair = Array.make 2 0 in
+  for i = 0 to nb_corners - 1 do 
+    if !combo_index < 2 then (
+      let corner_index = cube#get_corner_index (corner_enum_of_int i) in
+      if (
+        corner_index = int_of_corner_enum c1 || 
+        corner_index = int_of_corner_enum c2
+      ) then (
+        tetrad_pair.(!combo_index) <- i;
+        combo_index := !combo_index + 1;
+      )
+    );
+  done;
+  tetrad_pair;;
 
 
 let generate_pairs n =
-  let pairs = Array.make (n*(n-1)/2) (Array.make 2 0) in 
-  let rec generate_pair_aux pair_index pair pairs_index = 
-    if pair_index == 2 then (
-      pairs.(pairs_index) <- pair;
-    ) else (
-      let start = if pair_index = 0 then 0 else pair.(pair_index - 1) + 1 in
-      let i = ref start in
-      while !i > n - 1 do
-        pair.(pair_index) <- !i;
-        generate_pair_aux (pair_index + 1) pair (pairs_index + 1);
-        i := !i + 1;
-      done; 
-    ) in generate_pair_aux 0 pairs.(0) 0;
+  let pairs = Array.make_matrix (n*(n-1)/2) 2 0 in 
+  let pairs_index = ref 0 in
+  let rec generate_pairs_aux i j = 
+    if i >= n then ()
+    else if j >= n then generate_pairs_aux (i + 1) (i + 2)
+    else (
+      pairs.(!pairs_index).(0) <- i;
+      pairs.(!pairs_index).(1) <- j;
+      pairs_index := !pairs_index + 1;
+      generate_pairs_aux i (j + 1);
+    ) in generate_pairs_aux 0 1;
   pairs;;
   
   
 let generate_bases n = 
   let bases = Array.make ((n-2)/2) 0 in
   (bases.(((n-2)/2) - 1) <- 1);
-  let i = ref (((n-2)/2) - 2) in
-  while !i >= 0 do
-    bases.(!i) <- bases.(!i + 1) * combinations ((n-2) - 2*(!i)) 2;
-    i := !i - 1;
+  for i = ((n-2)/2) - 2 downto 0 do
+    bases.(i) <- bases.(i+1) * combinations ((n - 2) - 2 * i) 2;
   done;
   bases;;
   
   
-let pair_indexer tetrad_pairs = 
-  let generated_pairs = generate_pairs 8 in 
-  let bases = generate_bases 8 in
+let pair_indexer tetrad_pairs nb_pairs =  
+  let bases = generate_bases nb_pairs in
+  let remaining = generate_pairs nb_pairs in 
+
   let rank = ref 0 in
-  let num_remaining = ref (8*(8-1)/2) in
-  let remaining = ref generated_pairs in 
-  Array.iter ( fun pair -> 
+  let num_remaining = ref (nb_pairs*(nb_pairs-1)/2) in
+  for n = 0 to ((nb_pairs - 2) / 2) - 1 do
     let remaining_index = ref 0 in
-    for j = 0 to !num_remaining do
-      let remaining_pair = !remaining.(j) in
+    let pair = tetrad_pairs.(n) in
+
+    for i = 0 to !num_remaining - 1 do
+      let remaining_pair = remaining.(i) in
       if (remaining_pair.(0) = pair.(0) && remaining_pair.(1) = pair.(1)) then (
-        rank := j * bases.(!num_remaining - 1);
+        rank := !rank + (i * bases.(n));
       ) else if (
-        remaining_pair.(0) <> pair.(0) && remaining_pair.(1) <> pair.(1) && 
-        remaining_pair.(0) <> pair.(1) && remaining_pair.(1) <> pair.(0)
-      ) then !remaining.(!remaining_index) <- remaining_pair;
+        remaining_pair.(0) <> pair.(0) && remaining_pair.(0) <> pair.(1) && 
+        remaining_pair.(1) <> pair.(0) && remaining_pair.(1) <> pair.(1)
+      ) then (
+        remaining.(!remaining_index).(0) <- remaining_pair.(0);
+        remaining.(!remaining_index).(1) <- remaining_pair.(1);
+        remaining_index := !remaining_index + 1;
+      );
     done;
     num_remaining := !remaining_index;
-  ) tetrad_pairs;
+  done;
   !rank;;
 
 let compute_ones_lookup n = 

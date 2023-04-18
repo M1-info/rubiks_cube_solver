@@ -1,17 +1,16 @@
 open Types
 
-let check_corners_parity (corners: corner array) = 
+
+let get_corners_parity (corners: corner array) = 
   let nb_corners = Array.length corners in
-  let rec check_corners_parity_aux parity i j = 
-    if i = nb_corners then parity
-    else (
-      let result = if (corners.(i).orientation < corners.(j).orientation) then 1 else 0 in
-      parity := !parity lxor result;
-      if j = nb_corners - 1 then check_corners_parity_aux parity (i + 1) 0
-      else check_corners_parity_aux parity i (j + 1)
-    ) in
-  let parity = check_corners_parity_aux (ref 0) 0 0 in
-  parity;;
+  let parity = ref 0 in
+  for i = 0 to nb_corners - 1 do
+    for j = i + 1 to nb_corners - 1 do
+      let v = if (corners.(i).orientation < corners.(j).orientation) then 1 else 0 in
+      parity := !parity lxor v;
+    done
+  done;
+  !parity;;
 
 let load_file filename =
   let chan = open_in_bin filename in
@@ -38,6 +37,13 @@ let bitset_to_int bitset =
   Enum.map (fun x -> 1 lsl x) enum
   |> Enum.fold (fun acc x -> acc lor x) 0;;
 
+
+let index_of (value: 'a) (array: 'a array) =
+  let rec index_of_aux el array index = 
+    if el = array.(index) then index
+    else index_of_aux el array (index + 1)
+  in
+  index_of_aux value array 0;;
 
 let pow a b = 
   let rec pow_helper a b acc = 

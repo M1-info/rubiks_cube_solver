@@ -1,3 +1,5 @@
+open Stdint
+
 open Utils_module.Types
 open Utils_module.Functions
 open Utils_module.Utils
@@ -12,24 +14,27 @@ class pattern_database =
     val mutable group_4 = {size = 0; data = [||]}
 
   method init () =
-    print_newline ();
-    Printf.printf "Loading pattern databases...\n";
-    Printf.printf "Loading group 1 : \n";
+    (* print_newline (); *)
+    (* Printf.printf "Loading pattern databases...\n"; *)
+    (* Printf.printf "Loading group 1 : \n"; *)
     self#load_group_1;
-    Printf.printf "Group 1 loaded !\n";
-    print_newline ();
-    Printf.printf "Loading group 2 : \n";
+    (* Printf.printf "Group 1 loaded !\n"; *)
+    (* print_newline (); *)
+
+    (* Printf.printf "Loading group 2 : \n"; *)
     self#load_group_2;
-    Printf.printf "Group 2 loaded !\n";
-    print_newline ();
-    Printf.printf "Loading group 3 : \n";
+
+    (* Printf.printf "Group 2 loaded !\n"; *)
+    (* print_newline (); *)
+    (* Printf.printf "Loading group 3 : \n"; *)
     self#load_group_3;
-    Printf.printf "Group 3 loaded !\n";
-    print_newline ();
-    Printf.printf "Loading group 4 : \n";
-    self#load_group_4;
-    Printf.printf "Pattern databases loaded !\n";
-    print_newline ();
+
+    (* Printf.printf "Group 3 loaded !\n"; *)
+    (* print_newline (); *)
+    (* Printf.printf "Loading group 4 : \n"; *)
+    (* self#load_group_4; *)
+    (* Printf.printf "Pattern databases loaded !\n"; *)
+    (* print_newline (); *)
 
   method get_group_1 () = group_1;
   method get_group_2 () = group_2;
@@ -84,7 +89,7 @@ class pattern_database =
       else (
         let orientation = cube#get_edge_orientation (int_of_edge_enum edge.e_enum) in
         let exponent = exponent_of_edge edge.e_enum in
-        acc + ((pow 2 exponent) * orientation);
+        acc + ((pow 2 exponent) * (Uint8.to_int orientation));
       )
     ) 0 edges;
 
@@ -109,14 +114,34 @@ class pattern_database =
   *)
   method get_index_group_2 (cube: rubiks_cube) = 
     let corners = cube#get_corners () in
-    let edges_map = Array.map (fun edge -> edge.e_enum) (cube#get_edges ()) in
-    let rank = combinations_indexer (compute_edges_combinations cube edges_map [| FR; FL; BL; BR |]) 12 4 in
+    let edges = cube#get_edges () in
+
+    let edges_length = Array.length edges in
+
+    let edge_combinations = Array.make 4 0 in 
+    let combinations_index = ref 0 in 
+    for i = 0 to edges_length - 1 do 
+      if !combinations_index < 4 then (
+        let edge_index = cube#get_edge_index (edge_enum_of_int i) in
+        if (
+          edge_index = int_of_edge_enum FR ||
+          edge_index = int_of_edge_enum FL ||
+          edge_index = int_of_edge_enum BL ||
+          edge_index = int_of_edge_enum BR
+        ) then (
+          edge_combinations.(!combinations_index) <- i;
+          combinations_index := !combinations_index + 1;
+        )
+      );
+    done;
+
+    let rank = combinations_indexer edge_combinations 12 4 in
 
     let orientation_corners_num = Array.fold_left ( fun acc corner ->
       if corner.c_enum = DRF then acc 
       else (
         let exponent = exponent_of_corner corner.c_enum in
-        acc + ((pow 3 exponent) * corner.orientation);
+        acc + ((pow 3 exponent) * Uint8.to_int corner.orientation);
       )
     ) 0 corners in
 
@@ -126,19 +151,45 @@ class pattern_database =
 
 
   method get_index_group_3 (cube: rubiks_cube) =
-    let pairs = [| ULB , URF ; DLF , DRB ; URB , ULF ; DLB , DRF |] in
+    let pairs = [| (ULB , URF) ; (DLF , DRB) ; (URB , ULF) ; (DLB , DRF) |] in
+    let corners_pair = Array.make 4 (Array.make 2 0) in 
 
-    let corners_pairs = compute_tetrad_pairs cube pairs in 
+    Array.iteri (fun index _ -> 
+      corners_pair.(index) <- compute_tetrad_pair cube pairs.(index);
+    ) pairs;
 
-    let corners_rank = pair_indexer corners_pairs in 
+    let corners_rank = pair_indexer corners_pair 8 in 
 
-    let edges_map = [| UB; UR; UF; UL; DF; DL; DB; DR |] in 
+    let all_edges = cube#get_edges () in
+    let edges_length = Array.length all_edges in
 
-    let edges_rank = combinations_indexer (compute_edges_combinations cube edges_map [| UB; UF; DF; DB |]) 12 4 in
+    let edges_map = [|0;1;2;3;0;0;0;0;4;5;6;7|] in
+
+    let edge_combinations = Array.make 4 0 in 
+    let edge_combinations_index = ref 0 in
+
+    for i = 0 to (edges_length - 1) do
+      if(!edge_combinations_index < 4) then (
+        let edge_index = cube#get_edge_index (edge_enum_of_int i) in
+        if  (
+              edge_index = int_of_edge_enum UB || 
+              edge_index = int_of_edge_enum UF ||
+              edge_index = int_of_edge_enum DF ||
+              edge_index = int_of_edge_enum DB
+            ) 
+            then (
+              edge_combinations.(!edge_combinations_index) <- edges_map.(i);
+              edge_combinations_index := !edge_combinations_index + 1;  
+            )
+      );
+    done;
     
-    let parity = check_corners_parity (cube#get_corners ()) in
+    let edges_rank = combinations_indexer edge_combinations 8 4 in
 
-    ((edges_rank * 2520 + corners_rank) * 2 + !parity);
+    let parity = get_corners_parity (cube#get_corners ()) in
+
+    (* 2520 -> 8C2*6C2*4C2 *)
+    (edges_rank * 2520 + corners_rank) * 2 + parity;
 
 
   method get_index_group_4 (cube: rubiks_cube) = 
