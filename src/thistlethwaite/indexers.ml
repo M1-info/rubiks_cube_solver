@@ -4,28 +4,6 @@ open Utils_module.Utils
 open Utils_module.Functions
 open Rubiks_cube
 
-let compute_edges_combinations (cube: rubiks_cube) edges edges_enums = 
-  let nb_edges = Array.length edges in
-  let edges_combos = Array.make 4 0 in
-  let rec compute_edges_combinations_aux edge_index combo_index = 
-    if edge_index >= nb_edges || combo_index >= 4 then ()
-    else (
-      let current_edge = edges.(edge_index) in
-      let current_edge_index = cube#get_edge_index current_edge in 
-      if (
-        current_edge_index = int_of_edge_enum edges_enums.(0) || 
-        current_edge_index = int_of_edge_enum edges_enums.(1) ||
-        current_edge_index = int_of_edge_enum edges_enums.(2) ||
-        current_edge_index = int_of_edge_enum edges_enums.(3)
-      ) then (
-        edges_combos.(combo_index) <- edge_index;
-        compute_edges_combinations_aux (edge_index + 1) (combo_index + 1);
-      )else (
-        compute_edges_combinations_aux (edge_index + 1) combo_index;
-      )
-    ) in compute_edges_combinations_aux 0 0;
-  edges_combos;;
-
 let combinations_indexer combs n k = 
   let choises = Array.make_matrix (n + 1) (k + 1) 0 in 
 
@@ -34,10 +12,10 @@ let combinations_indexer combs n k =
       choises.(i).(j) <- combinations i j
     done
   done;
-  
+
   let rank = ref choises.(n).(k) in
   for i = 0 to k - 1 do
-    rank := !rank - choises.(n - (combs.(i) + 1)).(k - 1);
+    rank := !rank - choises.(n - (combs.(i) + 1)).(k - i);
   done;
   !rank - 1;;
 
@@ -114,22 +92,24 @@ let pair_indexer tetrad_pairs nb_pairs =
   !rank;;
 
 let compute_ones_lookup n = 
-  let ones_lookup = Array.make (1 lsl n) 0 in
-  for i = 0 to (1 lsl n) - 1 do
-    let bits = BitSet.create i in
+  let size = 1 lsl n in
+  let ones_lookup = Array.make (size - 1) 0 in
+  for i = 0 to size - 2 do
+    let bits = bitarray (size-1) i in
     ones_lookup.(i) <- BitSet.count bits;
   done;
   ones_lookup;;
 
 let compute_factorials n k = 
-  let factorials = Array.make n 0 in
-  for i = 0 to n - 1 do
+  let factorials = Array.make k 0 in
+  for i = 0 to k - 1 do
     factorials.(i) <- pick (n - 1 - i) (k - 1 - i);
   done;
   factorials;;
 
 
 let permutations_indexer perm n k = 
+
   let factorials = compute_factorials n k in 
   let ones_lookup = compute_ones_lookup n in
 
@@ -139,12 +119,15 @@ let permutations_indexer perm n k =
   (lehmer.(0) <- perm.(0);
   BitSet.set bits_seen (n - 1 - perm.(0)));
 
-  let i = ref (-1) in 
-  Array.fold_left (fun acc _ -> (
-    i := !i + 1;
-    BitSet.set bits_seen (n - 1 - perm.(!i));
-    let ones = ones_lookup.((bitset_to_int bits_seen) lsr (n - perm.(!i))) in
-    lehmer.(!i) <- perm.(!i) - ones;
-    acc + lehmer.(!i) * factorials.(!i);
-  )) 0 lehmer;;
+  for i = 1 to k - 1 do 
+    BitSet.set bits_seen (n - 1 - perm.(i));
+    let ones = ones_lookup.((bitset_to_int bits_seen) lsr (n - perm.(i))) in
+    lehmer.(i) <- perm.(i) - ones;
+  done;
+
+  let rank = ref 0 in
+  for i = 0 to k - 1 do
+    rank := !rank + (lehmer.(i) * factorials.(i));
+  done;
+  !rank;;
 

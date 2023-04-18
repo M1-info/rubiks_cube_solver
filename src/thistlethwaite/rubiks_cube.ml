@@ -1,5 +1,3 @@
-open Stdint
-
 open Utils_module.Types
 open Utils_module.Utils
 open Utils_module.Moves_store
@@ -22,8 +20,8 @@ open Utils_module.Moves_store
 class rubiks_cube = 
   object (self)
 
-    val mutable edges   = Array.make 12 {e_enum = UB; orientation = Uint8.zero}
-    val mutable corners = Array.make 8  {c_enum = ULF; orientation = Uint8.zero}
+    val mutable edges   = Array.make 12 {e_index = 0; orientation = 0}
+    val mutable corners = Array.make 8  {c_index = 0; orientation = 0}
     val mutable centers = Array.make 6  {color = RED}
 
     (* Getters *)
@@ -38,10 +36,10 @@ class rubiks_cube =
     (* Initialize the cube at the solved state *)
     method init () = 
       for i = 0 to 11 do
-        edges.(i) <- {e_enum = edge_enum_of_int i; orientation = Uint8.zero}
+        edges.(i) <- {e_index = i; orientation = 0}
       done;
       for i = 0 to 7 do
-        corners.(i) <- {c_enum = corner_enum_of_int i; orientation = Uint8.zero}
+        corners.(i) <- {c_index = i; orientation = 0}
       done;
       for i = 0 to 5 do
         centers.(i) <- {color = color_of_int i}
@@ -51,16 +49,14 @@ class rubiks_cube =
     method copy () =
       let new_cube = new rubiks_cube in
       for i = 0 to 11 do
-        let edge_index = self#get_edge_index (edge_enum_of_int i) in
-        (new_cube#get_edges()).(i) <- { e_enum = edge_enum_of_int edge_index; 
-                                        orientation = self#get_edge_orientation (edge_enum_of_int i)
-                                      }
+        let index = self#get_edge_index (edge_enum_of_int i) in
+        let orientation = self#get_edge_orientation (edge_enum_of_int i) in
+        (new_cube#get_edges ()).(i) <- {e_index = index; orientation = orientation}
       done;
       for i = 0 to 7 do
-        let corner_index = self#get_corner_index (corner_enum_of_int i) in
-        (new_cube#get_corners()).(i) <- { c_enum = corner_enum_of_int corner_index; orientation = 
-                                          self#get_corner_orientation (corner_enum_of_int i)
-                                        }
+        let index = self#get_corner_index (corner_enum_of_int i) in
+        let orientation = self#get_corner_orientation (corner_enum_of_int i) in
+        (new_cube#get_corners ()).(i) <- {c_index = index; orientation = orientation}
       done;
       for i = 0 to 5 do
         (new_cube#get_centers()).(i) <- {color = color_of_int i}
@@ -73,12 +69,12 @@ class rubiks_cube =
       let is_same_edge i = 
         let edge1 = edges.(i) in
         let edge2 = edges2.(i) in
-        edge1.e_enum = edge2.e_enum && edge1.orientation = edge2.orientation
+        edge1.e_index = edge2.e_index && edge1.orientation = edge2.orientation
       in
       let is_same_corner i = 
         let corner1 = corners.(i) in
         let corner2 = corners2.(i) in
-        corner1.c_enum = corner2.c_enum && corner1.orientation = corner2.orientation
+        corner1.c_index = corner2.c_index && corner1.orientation = corner2.orientation
       in
       let is_same_center i = 
         let center1 = centers.(i) in
@@ -110,7 +106,7 @@ class rubiks_cube =
       let colors = Array.make 2 WHITE in
       let edge = edges.(index) in
       let set_colors first second =
-        if edge.orientation = Uint8.zero then (
+        if edge.orientation = 0 then (
           colors.(0) <- first;
           colors.(1) <- second;
         ) else (
@@ -118,7 +114,7 @@ class rubiks_cube =
           colors.(1) <- first;
         )
       in 
-      match edge.e_enum with
+      match (edge_enum_of_int edge.e_index) with
       | UB -> set_colors RED      YELLOW;   colors;
       | UR -> set_colors RED      GREEN;    colors;
       | UF -> set_colors RED      WHITE;    colors;
@@ -141,23 +137,23 @@ class rubiks_cube =
       let colors = Array.make 3 WHITE in
       let corner = corners.(index) in
       let set_color first second third = 
-        if corner.orientation = Uint8.zero then (
+        if corner.orientation = 0 then (
           colors.(0) <- first;
           colors.(1) <- second;
           colors.(2) <- third;
 
-          if (int_of_corner_enum corner.c_enum + index) mod 2 == 1 then (
+          if (corner.c_index + index) mod 2 = 1 then (
             let hold_color = colors.(1) in
             colors.(1) <- colors.(2);
             colors.(2) <- hold_color;
           )
 
-        ) else if corner.orientation = Uint8.one then (
+        ) else if corner.orientation = 1 then (
           colors.(0) <- second;
           colors.(1) <- third;
           colors.(2) <- first;
 
-          if (int_of_corner_enum corner.c_enum + index) mod 2 == 1 then (
+          if (corner.c_index + index) mod 2 = 1 then (
             let hold_color = colors.(0) in
             colors.(0) <- colors.(1);
             colors.(1) <- hold_color;
@@ -168,7 +164,7 @@ class rubiks_cube =
           colors.(1) <- first;
           colors.(2) <- second;
 
-          if (int_of_corner_enum corner.c_enum + index) mod 2 == 1 then (
+          if (corner.c_index + index) mod 2 = 1 then (
             let hold_color = colors.(0) in
             colors.(0) <- colors.(2);
             colors.(2) <- hold_color;
@@ -176,11 +172,11 @@ class rubiks_cube =
 
         )
       in
-      match corner.c_enum with
-      | URF -> set_color RED      GREEN    WHITE;   colors;
-      | ULF -> set_color RED      BLUE     WHITE;   colors;
+      match (corner_enum_of_int corner.c_index) with
       | ULB -> set_color RED      BLUE     YELLOW;  colors;
       | URB -> set_color RED      GREEN    YELLOW;  colors;
+      | URF -> set_color RED      GREEN    WHITE;   colors;
+      | ULF -> set_color RED      BLUE     WHITE;   colors;
       | DRF -> set_color ORANGE   GREEN    WHITE;   colors;
       | DLF -> set_color ORANGE   BLUE     WHITE;   colors;
       | DLB -> set_color ORANGE   BLUE     YELLOW;  colors;
@@ -257,38 +253,12 @@ class rubiks_cube =
         | _, _, _ -> failwith "Invalid face or position"
       );
 
-    method get_edge_index edge = 
-      int_of_edge_enum edges.(int_of_edge_enum edge).e_enum
-      (* self#get_edge_index_by_index (int_of_edge_enum edge) *)
-      (* let nb_edges = Array.length edges in
-      let rec get_index index = 
-        if index = nb_edges then failwith "Invalid edge"
-        else if edges.(index).e_enum = edge then index
-        else get_index (index + 1)
-      in get_index 0; *)
 
-    
-    method get_corner_index corner =
-      int_of_corner_enum corners.(int_of_corner_enum corner).c_enum;
-      (* let nb_corners = Array.length corners in
-      let rec get_index index = 
-        if index = nb_corners then failwith "Invalid corner"
-        else if corners.(index).c_enum = corner then index
-        else get_index (index + 1)
-      in get_index 0; *)
+    method get_edge_index edge = edges.(int_of_edge_enum edge).e_index
+    method get_corner_index corner = corners.(int_of_corner_enum corner).c_index;
 
-
-    (* method get_edge_orientation index = 
-      edges.(index).orientation; *)
-
-    method get_edge_orientation (edge: edge_enum) = edges.(int_of_edge_enum edge).orientation;
-
-      
-    (* method get_corner_orientation index =
-      corners.(index).orientation; *)
-
-
-    method get_corner_orientation (corner: corner_enum) = corners.(int_of_corner_enum corner).orientation;
+    method get_edge_orientation edge = edges.(int_of_edge_enum edge).orientation;
+    method get_corner_orientation corner = corners.(int_of_corner_enum corner).orientation;
 
     (*
       Return a boolean indicating if the cube is solved or not.
@@ -299,11 +269,11 @@ class rubiks_cube =
     method is_solved () =
       let rec check_edge index = 
         if index = Array.length edges then true
-        else if edges.(index).e_enum <> (edge_enum_of_int index) || edges.(index).orientation <> Uint8.zero then false
+        else if edges.(index).e_index <> index || edges.(index).orientation <> 0 then false
         else check_edge (index + 1)
       and check_corners index = 
         if index = Array.length corners then true
-        else if corners.(index).c_enum <> (corner_enum_of_int index) || corners.(index).orientation <> Uint8.zero then false
+        else if corners.(index).c_index <> index || corners.(index).orientation <> 0 then false
         else check_corners (index + 1)
       in check_edge 0 && check_corners 0
 
@@ -314,9 +284,10 @@ class rubiks_cube =
     *)
     method update_corner_orientation corner_enum delta = 
       let corner = corners.(int_of_corner_enum corner_enum) in
-      corner.orientation <- Uint8.add corner.orientation delta;
-      if corner.orientation = Uint8.of_int 3 then corner.orientation <- Uint8.zero;
-      if corner.orientation = Uint8.of_int 4 then corner.orientation <- Uint8.one;
+
+      corner.orientation <- (corner.orientation + delta);
+      if corner.orientation = 3 then corner.orientation <- 0
+      else if corner.orientation = 4 then corner.orientation <- 1;
 
 
     (*
@@ -327,8 +298,7 @@ class rubiks_cube =
     *)
     method update_edge_orientation edge_enum = 
       let edge = edges.(int_of_edge_enum edge_enum) in
-      let orientation = edge.orientation in
-      edge.orientation <- Uint8.logxor orientation Uint8.one;
+      edge.orientation <- edge.orientation lxor 1;
 
 
     (* Cube moves *)
@@ -392,10 +362,10 @@ class rubiks_cube =
       edges.(int_of_edge_enum FL) <- edges.(int_of_edge_enum UL);
       edges.(int_of_edge_enum UL) <- hold_edge;
 
-      self#update_corner_orientation DLB (Uint8.of_int 1);
-      self#update_corner_orientation DLF (Uint8.of_int 2);
-      self#update_corner_orientation ULF (Uint8.of_int 1);
-      self#update_corner_orientation ULB (Uint8.of_int 2);
+      self#update_corner_orientation DLB 1;
+      self#update_corner_orientation DLF 2;
+      self#update_corner_orientation ULF 1;
+      self#update_corner_orientation ULB 2;
 
 
     method l_prime () =
@@ -411,10 +381,10 @@ class rubiks_cube =
       edges.(int_of_edge_enum FL) <- edges.(int_of_edge_enum DL);
       edges.(int_of_edge_enum DL) <- hold_edge;
 
-      self#update_corner_orientation DLB (Uint8.of_int 1);
-      self#update_corner_orientation DLF (Uint8.of_int 2);
-      self#update_corner_orientation ULF (Uint8.of_int 1);
-      self#update_corner_orientation ULB (Uint8.of_int 2);
+      self#update_corner_orientation DLB 1;
+      self#update_corner_orientation DLF 2;
+      self#update_corner_orientation ULF 1;
+      self#update_corner_orientation ULB 2;
 
 
     method l_2 () = 
@@ -448,10 +418,10 @@ class rubiks_cube =
       edges.(int_of_edge_enum DF) <- edges.(int_of_edge_enum FR);
       edges.(int_of_edge_enum FR) <- hold_edge;
 
-      self#update_corner_orientation ULF (Uint8.of_int 2);
-      self#update_corner_orientation URF (Uint8.of_int 1);
-      self#update_corner_orientation DRF (Uint8.of_int 2);
-      self#update_corner_orientation DLF (Uint8.of_int 1);
+      self#update_corner_orientation ULF 2;
+      self#update_corner_orientation URF 1;
+      self#update_corner_orientation DRF 2;
+      self#update_corner_orientation DLF 1;
 
       self#update_edge_orientation UF;
       self#update_edge_orientation FL;
@@ -472,10 +442,10 @@ class rubiks_cube =
       edges.(int_of_edge_enum DF) <- edges.(int_of_edge_enum FL);
       edges.(int_of_edge_enum FL) <- hold_edge;
 
-      self#update_corner_orientation ULF (Uint8.of_int 2);
-      self#update_corner_orientation URF (Uint8.of_int 1);
-      self#update_corner_orientation DRF (Uint8.of_int 2);
-      self#update_corner_orientation DLF (Uint8.of_int 1);
+      self#update_corner_orientation ULF 2;
+      self#update_corner_orientation URF 1;
+      self#update_corner_orientation DRF 2;
+      self#update_corner_orientation DLF 1;
 
       self#update_edge_orientation UF;
       self#update_edge_orientation FL;
@@ -514,10 +484,10 @@ class rubiks_cube =
       edges.(int_of_edge_enum FR) <- edges.(int_of_edge_enum DR);
       edges.(int_of_edge_enum DR) <- hold_edge;
 
-      self#update_corner_orientation DRB (Uint8.of_int 2);
-      self#update_corner_orientation DRF (Uint8.of_int 1);
-      self#update_corner_orientation URF (Uint8.of_int 2);
-      self#update_corner_orientation URB (Uint8.of_int 1);
+      self#update_corner_orientation DRB 2;
+      self#update_corner_orientation DRF 1;
+      self#update_corner_orientation URF 2;
+      self#update_corner_orientation URB 1;
 
     
     method r_prime () = 
@@ -533,10 +503,10 @@ class rubiks_cube =
       edges.(int_of_edge_enum FR) <- edges.(int_of_edge_enum UR);
       edges.(int_of_edge_enum UR) <- hold_edge;
 
-      self#update_corner_orientation DRB (Uint8.of_int 2);
-      self#update_corner_orientation DRF (Uint8.of_int 1);
-      self#update_corner_orientation URF (Uint8.of_int 2);
-      self#update_corner_orientation URB (Uint8.of_int 1);
+      self#update_corner_orientation DRB 2;
+      self#update_corner_orientation DRF 1;
+      self#update_corner_orientation URF 2;
+      self#update_corner_orientation URB 1;
 
 
     method r_2 () =
@@ -571,10 +541,10 @@ class rubiks_cube =
       edges.(int_of_edge_enum DB) <- edges.(int_of_edge_enum BL);
       edges.(int_of_edge_enum BL) <- hold_edge;
 
-      self#update_corner_orientation ULB (Uint8.of_int 1);
-      self#update_corner_orientation URB (Uint8.of_int 2);
-      self#update_corner_orientation DRB (Uint8.of_int 1);
-      self#update_corner_orientation DLB (Uint8.of_int 2);
+      self#update_corner_orientation ULB 1;
+      self#update_corner_orientation URB 2;
+      self#update_corner_orientation DRB 1;
+      self#update_corner_orientation DLB 2;
 
       self#update_edge_orientation UB;
       self#update_edge_orientation BL;
@@ -595,10 +565,10 @@ class rubiks_cube =
       edges.(int_of_edge_enum DB) <- edges.(int_of_edge_enum BR);
       edges.(int_of_edge_enum BR) <- hold_edge;
 
-      self#update_corner_orientation ULB (Uint8.of_int 1);
-      self#update_corner_orientation URB (Uint8.of_int 2);
-      self#update_corner_orientation DRB (Uint8.of_int 1);
-      self#update_corner_orientation DLB (Uint8.of_int 2);
+      self#update_corner_orientation ULB 1;
+      self#update_corner_orientation URB 2;
+      self#update_corner_orientation DRB 1;
+      self#update_corner_orientation DLB 2;
 
       self#update_edge_orientation UB;
       self#update_edge_orientation BL;

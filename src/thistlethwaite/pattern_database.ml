@@ -1,5 +1,3 @@
-open Stdint
-
 open Utils_module.Types
 open Utils_module.Functions
 open Utils_module.Utils
@@ -14,27 +12,10 @@ class pattern_database =
     val mutable group_4 = {size = 0; data = [||]}
 
   method init () =
-    (* print_newline (); *)
-    (* Printf.printf "Loading pattern databases...\n"; *)
-    (* Printf.printf "Loading group 1 : \n"; *)
     self#load_group_1;
-    (* Printf.printf "Group 1 loaded !\n"; *)
-    (* print_newline (); *)
-
-    (* Printf.printf "Loading group 2 : \n"; *)
     self#load_group_2;
-
-    (* Printf.printf "Group 2 loaded !\n"; *)
-    (* print_newline (); *)
-    (* Printf.printf "Loading group 3 : \n"; *)
     self#load_group_3;
-
-    (* Printf.printf "Group 3 loaded !\n"; *)
-    (* print_newline (); *)
-    (* Printf.printf "Loading group 4 : \n"; *)
-    (* self#load_group_4; *)
-    (* Printf.printf "Pattern databases loaded !\n"; *)
-    (* print_newline (); *)
+    self#load_group_4;
 
   method get_group_1 () = group_1;
   method get_group_2 () = group_2;
@@ -85,11 +66,11 @@ class pattern_database =
   method get_index_group_1 (cube: rubiks_cube) = 
     let edges = (cube#get_edges ()) in
     Array.fold_left (fun acc edge -> 
-      if edge.e_enum = DR then acc 
+      if edge.e_index = int_of_edge_enum DR then acc 
       else (
-        let orientation = cube#get_edge_orientation edge.e_enum in
-        let exponent = exponent_of_edge edge.e_enum in
-        acc + ((pow 2 exponent) * (Uint8.to_int orientation));
+        let orientation = cube#get_edge_orientation (edge_enum_of_int edge.e_index) in
+        let exponent = exponent_of_edge (edge_enum_of_int edge.e_index) in
+        acc + ((pow 2 exponent) * orientation);
       )
     ) 0 edges;
 
@@ -136,16 +117,6 @@ class pattern_database =
 
     let rank = combinations_indexer edge_combinations 12 4 in
 
-    (* let corner_orientations = [|
-      ULB, cube#get_corner_orientation ULB;
-      ULB, cube#get_corner_orientation URB;
-      ULB, cube#get_corner_orientation URF;
-      ULB, cube#get_corner_orientation ULF;
-      ULB, cube#get_corner_orientation DLF;
-      ULB, cube#get_corner_orientation DLB;
-      ULB, cube#get_corner_orientation DRB;
-    |] in *)
-
     let corner_orientations = [|
       cube#get_corner_orientation ULB;
       cube#get_corner_orientation URB;
@@ -157,19 +128,14 @@ class pattern_database =
     |] in
 
     let orientation_corners_num = 
-      Uint8.to_int corner_orientations.(0) * 729 +
-      Uint8.to_int corner_orientations.(1) * 243 +
-      Uint8.to_int corner_orientations.(2) * 81 +
-      Uint8.to_int corner_orientations.(3) * 27 +
-      Uint8.to_int corner_orientations.(4) * 9 +
-      Uint8.to_int corner_orientations.(5) * 3 +
-      Uint8.to_int corner_orientations.(6)
+      corner_orientations.(0) * 729 +
+      corner_orientations.(1) * 243 +
+      corner_orientations.(2) * 81 +
+      corner_orientations.(3) * 27 +
+      corner_orientations.(4) * 9 +
+      corner_orientations.(5) * 3 +
+      corner_orientations.(6)
     in
-
-    (* let orientation_corners_num = Array.fold_left ( fun acc (corner, orientation) ->
-      let exponent = exponent_of_corner corner in
-      acc + ((pow 3 exponent) * Uint8.to_int orientation);
-    ) 0 corner_orientations in *)
 
     (* 2187 = 3^7 (7 are the corners and 3 because they are indexed in base 3) *)
     let index = (rank * 2187) + orientation_corners_num in
@@ -189,7 +155,20 @@ class pattern_database =
     let all_edges = cube#get_edges () in
     let edges_length = Array.length all_edges in
 
-    let edges_map = [|0;1;2;3;0;0;0;0;4;5;6;7|] in
+    (* let edges_map = [|0;1;2;3;0;0;0;0;4;5;6;7|] in *)
+    let edges_map = Array.make edges_length 0 in
+    edges_map.(int_of_edge_enum UB) <- 0;
+    edges_map.(int_of_edge_enum UR) <- 1;
+    edges_map.(int_of_edge_enum UF) <- 2;
+    edges_map.(int_of_edge_enum UL) <- 3;
+    edges_map.(int_of_edge_enum FR) <- 3;
+    edges_map.(int_of_edge_enum FL) <- 6;
+    edges_map.(int_of_edge_enum BL) <- 4;
+    edges_map.(int_of_edge_enum BR) <- 5;
+    edges_map.(int_of_edge_enum DF) <- 4;
+    edges_map.(int_of_edge_enum DL) <- 5;
+    edges_map.(int_of_edge_enum DB) <- 6;
+    edges_map.(int_of_edge_enum DR) <- 7;
 
     let edge_combinations = Array.make 4 0 in 
     let edge_combinations_index = ref 0 in
@@ -212,33 +191,41 @@ class pattern_database =
     
     let edges_rank = combinations_indexer edge_combinations 8 4 in
 
-    let parity = get_corners_parity (cube#get_corners ()) in
+    (* let parity = get_corners_parity (cube#get_corners ()) in *)
+    let corners_length = Array.length (cube#get_corners ()) in
+    let parity = ref 0 in 
+    for i = 0 to corners_length - 1 do
+      for j = i + 1 to corners_length - 1 do
+        let v = if (cube#get_corner_index (corner_enum_of_int i)) < (cube#get_corner_index (corner_enum_of_int j)) then 1 else 0 in
+        parity := !parity lxor v;
+      done;
+    done;
 
     (* 2520 -> 8C2*6C2*4C2 *)
-    (edges_rank * 2520 + corners_rank) * 2 + parity;
+    (edges_rank * 2520 + corners_rank) * 2 + !parity;
 
 
   method get_index_group_4 (cube: rubiks_cube) = 
 
     let edges_map = Array.make 12 0 in
 
-    ((* M slice edges *)
-    edges_map.(cube#get_edge_index UB) <- 0;
-    edges_map.(cube#get_edge_index UF) <- 1;
-    edges_map.(cube#get_edge_index DF) <- 2;
-    edges_map.(cube#get_edge_index DB) <- 3;
+    (* M slice edges *)
+    edges_map.(int_of_edge_enum UB) <- 0;
+    edges_map.(int_of_edge_enum UF) <- 1;
+    edges_map.(int_of_edge_enum DF) <- 2;
+    edges_map.(int_of_edge_enum DB) <- 3;
 
     (* S slice edges *)
-    edges_map.(cube#get_edge_index UR) <- 0;
-    edges_map.(cube#get_edge_index UL) <- 1;
-    edges_map.(cube#get_edge_index DL) <- 2;
-    edges_map.(cube#get_edge_index DR) <- 3;
+    edges_map.(int_of_edge_enum UR) <- 0;
+    edges_map.(int_of_edge_enum UL) <- 1;
+    edges_map.(int_of_edge_enum DL) <- 2;
+    edges_map.(int_of_edge_enum DR) <- 3;
 
     (* E slice edges *)
-    edges_map.(cube#get_edge_index FR) <- 0;
-    edges_map.(cube#get_edge_index FL) <- 1;
-    edges_map.(cube#get_edge_index BL) <- 2;
-    edges_map.(cube#get_edge_index BR) <- 3);
+    edges_map.(int_of_edge_enum FR) <- 0;
+    edges_map.(int_of_edge_enum FL) <- 1;
+    edges_map.(int_of_edge_enum BL) <- 2;
+    edges_map.(int_of_edge_enum BR) <- 3;
 
     let m_edges = [| 
       edges_map.(cube#get_edge_index UB);
@@ -267,15 +254,15 @@ class pattern_database =
 
     let corner_map = Array.make 8 0 in 
 
-    (corner_map.(cube#get_corner_index ULB) <- 0;
-    corner_map.(cube#get_corner_index URF) <- 1;
-    corner_map.(cube#get_corner_index DLF) <- 2;
-    corner_map.(cube#get_corner_index DRB) <- 3;
+    corner_map.(int_of_corner_enum ULB) <- 0;
+    corner_map.(int_of_corner_enum URF) <- 1;
+    corner_map.(int_of_corner_enum DLF) <- 2;
+    corner_map.(int_of_corner_enum DRB) <- 3;
 
-    corner_map.(cube#get_corner_index URB) <- 0;
-    corner_map.(cube#get_corner_index ULF) <- 1;
-    corner_map.(cube#get_corner_index DLB) <- 2;
-    corner_map.(cube#get_corner_index DRF) <- 3);
+    corner_map.(int_of_corner_enum URB) <- 0;
+    corner_map.(int_of_corner_enum ULF) <- 1;
+    corner_map.(int_of_corner_enum DLB) <- 2;
+    corner_map.(int_of_corner_enum DRF) <- 3;
 
     let tetrad_pair = [|
       corner_map.(cube#get_corner_index ULB);

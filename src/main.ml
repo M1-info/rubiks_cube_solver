@@ -3,11 +3,8 @@ open Classes_module.Rubiks_cube
 open Classes_module.Pattern_database
 open Classes_module.Goals
 open Utils_module.Utils
-(* open Utils_module.Types *)
-(* open Utils_module.Functions *)
-
-
 open Utils_module.Moves_store;;
+
 
 let cube = new rubiks_cube;;
 cube#init ();;
@@ -66,6 +63,22 @@ cube#apply_moves moves_g3;;
 cube#show_cube;;
 
 (* Group 4 *)
+
+print_string "------------------";;
+
+let goal_4 = get_goal 3;;
+
+let moves_store_4 = get_moves 3;;
+
+let moves_g4 = ida_star pattern_database cube 3 goal_4 moves_store_4;;
+
+List.iter (fun x -> print_string (string_of_move x); print_string " ") moves_g4;;
+
+cube#apply_moves moves_g4;;
+
+cube#show_cube;;
+
+(* Group 5 *)
 
 
 

@@ -68,3 +68,12 @@ let combinations n k =
 
 let pick n k =
   factorial(n) / factorial(n - k);;
+
+
+let nth_bit x n = x land (1 lsl n) <> 0
+
+let bitarray length x = 
+  let array = Array.init length (fun i -> nth_bit x (length - 1 - i)) in 
+  let bitset = BitSet.create length in
+  Array.iteri (fun i x -> if x = true then BitSet.set bitset (length - i)) array;
+  bitset;;
