@@ -87,7 +87,7 @@ class pattern_database =
     Array.fold_left (fun acc edge -> 
       if edge.e_enum = DR then acc 
       else (
-        let orientation = cube#get_edge_orientation (int_of_edge_enum edge.e_enum) in
+        let orientation = cube#get_edge_orientation edge.e_enum in
         let exponent = exponent_of_edge edge.e_enum in
         acc + ((pow 2 exponent) * (Uint8.to_int orientation));
       )
@@ -113,7 +113,6 @@ class pattern_database =
     DBL = 0    
   *)
   method get_index_group_2 (cube: rubiks_cube) = 
-    let corners = cube#get_corners () in
     let edges = cube#get_edges () in
 
     let edges_length = Array.length edges in
@@ -137,13 +136,40 @@ class pattern_database =
 
     let rank = combinations_indexer edge_combinations 12 4 in
 
-    let orientation_corners_num = Array.fold_left ( fun acc corner ->
-      if corner.c_enum = DRF then acc 
-      else (
-        let exponent = exponent_of_corner corner.c_enum in
-        acc + ((pow 3 exponent) * Uint8.to_int corner.orientation);
-      )
-    ) 0 corners in
+    (* let corner_orientations = [|
+      ULB, cube#get_corner_orientation ULB;
+      ULB, cube#get_corner_orientation URB;
+      ULB, cube#get_corner_orientation URF;
+      ULB, cube#get_corner_orientation ULF;
+      ULB, cube#get_corner_orientation DLF;
+      ULB, cube#get_corner_orientation DLB;
+      ULB, cube#get_corner_orientation DRB;
+    |] in *)
+
+    let corner_orientations = [|
+      cube#get_corner_orientation ULB;
+      cube#get_corner_orientation URB;
+      cube#get_corner_orientation URF;
+      cube#get_corner_orientation ULF;
+      cube#get_corner_orientation DLF;
+      cube#get_corner_orientation DLB;
+      cube#get_corner_orientation DRB;
+    |] in
+
+    let orientation_corners_num = 
+      Uint8.to_int corner_orientations.(0) * 729 +
+      Uint8.to_int corner_orientations.(1) * 243 +
+      Uint8.to_int corner_orientations.(2) * 81 +
+      Uint8.to_int corner_orientations.(3) * 27 +
+      Uint8.to_int corner_orientations.(4) * 9 +
+      Uint8.to_int corner_orientations.(5) * 3 +
+      Uint8.to_int corner_orientations.(6)
+    in
+
+    (* let orientation_corners_num = Array.fold_left ( fun acc (corner, orientation) ->
+      let exponent = exponent_of_corner corner in
+      acc + ((pow 3 exponent) * Uint8.to_int orientation);
+    ) 0 corner_orientations in *)
 
     (* 2187 = 3^7 (7 are the corners and 3 because they are indexed in base 3) *)
     let index = (rank * 2187) + orientation_corners_num in

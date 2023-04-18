@@ -36,8 +36,8 @@ let goal_1_to_2 (cube: rubiks_cube) =
   let rec is_satisfied_corners acc (corners: corner list) = 
     match corners with
     | [] -> acc
-    | corner::rest -> if corner.orientation <> Uint8.zero then (is_satisfied_corners false []) 
-                      else (is_satisfied_corners true rest)
+    | corner::rest -> if corner.orientation = Uint8.zero then (is_satisfied_corners true rest) 
+                      else (is_satisfied_corners false [])
   in 
   if (
     (* Check if any E-slice edge is in a E-slice postion *)

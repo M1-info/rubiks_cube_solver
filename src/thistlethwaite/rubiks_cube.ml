@@ -52,11 +52,15 @@ class rubiks_cube =
       let new_cube = new rubiks_cube in
       for i = 0 to 11 do
         let edge_index = self#get_edge_index (edge_enum_of_int i) in
-        (new_cube#get_edges()).(i) <- {e_enum = edge_enum_of_int edge_index; orientation = self#get_edge_orientation edge_index}
+        (new_cube#get_edges()).(i) <- { e_enum = edge_enum_of_int edge_index; 
+                                        orientation = self#get_edge_orientation (edge_enum_of_int i)
+                                      }
       done;
       for i = 0 to 7 do
         let corner_index = self#get_corner_index (corner_enum_of_int i) in
-        (new_cube#get_corners()).(i) <- {c_enum = corner_enum_of_int corner_index; orientation = self#get_corner_orientation corner_index}
+        (new_cube#get_corners()).(i) <- { c_enum = corner_enum_of_int corner_index; orientation = 
+                                          self#get_corner_orientation (corner_enum_of_int i)
+                                        }
       done;
       for i = 0 to 5 do
         (new_cube#get_centers()).(i) <- {color = color_of_int i}
@@ -265,7 +269,7 @@ class rubiks_cube =
 
     
     method get_corner_index corner =
-      int_of_corner_enum corners.(int_of_corner_enum corner).c_enum
+      int_of_corner_enum corners.(int_of_corner_enum corner).c_enum;
       (* let nb_corners = Array.length corners in
       let rec get_index index = 
         if index = nb_corners then failwith "Invalid corner"
@@ -274,12 +278,17 @@ class rubiks_cube =
       in get_index 0; *)
 
 
-    method get_edge_orientation index = 
-      edges.(index).orientation;
+    (* method get_edge_orientation index = 
+      edges.(index).orientation; *)
+
+    method get_edge_orientation (edge: edge_enum) = edges.(int_of_edge_enum edge).orientation;
 
       
-    method get_corner_orientation index =
-      corners.(index).orientation;
+    (* method get_corner_orientation index =
+      corners.(index).orientation; *)
+
+
+    method get_corner_orientation (corner: corner_enum) = corners.(int_of_corner_enum corner).orientation;
 
     (*
       Return a boolean indicating if the cube is solved or not.
