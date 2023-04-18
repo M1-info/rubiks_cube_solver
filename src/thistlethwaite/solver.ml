@@ -116,7 +116,7 @@ let database_indexer (database: pattern_database) group_index goal solved_cube m
 
   let group = database#get_group group_index in
   let root_index = database#get_index group_index solved_cube in
-  let _ = database#set_num_moves group root_index 0 in
+  let _ = database#set_num_moves root_index group 0 in
   index_count := !index_count + 1;
 
   while not (goal solved_cube) do 
@@ -140,7 +140,7 @@ let database_indexer (database: pattern_database) group_index goal solved_cube m
           
         ) else (
           if cube_depth_copy = !current_depth then (
-            if database#set_num_moves group root_index 0 then (
+            if database#set_num_moves root_index group 0 then (
               index_count := !index_count + 1;
             );
           ) else (

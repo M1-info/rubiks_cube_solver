@@ -1,6 +1,5 @@
 open Utils_module.Types
 open Utils_module.Utils
-open Utils_module.Functions
 open Rubiks_cube
 
 let goal_0_to_1 (cube: rubiks_cube) =
@@ -66,7 +65,14 @@ let goal_2_to_3 (cube: rubiks_cube) =
   pair_index := cube#get_corner_index DRB;
   let second_pair_inverse = !pair_index = int_of_corner_enum DRB || !pair_index = int_of_corner_enum DLF in
 
-  let parity = get_corners_parity corners in
+  let parity = ref 0 in
+  let nb_corners = Array.length corners in
+  for i = 0 to nb_corners - 1 do
+    for j = i + 1 to nb_corners - 1 do
+      let v = if (corners.(i).orientation < corners.(j).orientation) then 1 else 0 in
+      parity := !parity lxor v;
+    done
+  done;
 
   if (
     first_pair && second_pair && first_pair_inverse && second_pair_inverse && (* third_pair && third_pair_inverse && *)
@@ -75,7 +81,7 @@ let goal_2_to_3 (cube: rubiks_cube) =
     (cube#get_edge_index UF = 0 || cube#get_edge_index UF = 2 || cube#get_edge_index UF = 8 || cube#get_edge_index UF = 10) &&
     (cube#get_edge_index DF = 0 || cube#get_edge_index DF = 2 || cube#get_edge_index DF = 8 || cube#get_edge_index DF = 10) &&
     (cube#get_edge_index DB = 0 || cube#get_edge_index DB = 2 || cube#get_edge_index DB = 8 || cube#get_edge_index DB = 10) &&
-    parity = 0 
+    !parity = 0 
   ) then true else false;;
     
 

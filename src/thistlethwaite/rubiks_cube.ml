@@ -28,84 +28,46 @@ class rubiks_cube =
     method get_edges () = edges;
     method get_corners () = corners;
     method get_centers () = centers;
-
-    (* Setters *)
-    method set_edges edg = edges <- edg;
-    method set_corners corn = corners <- corn;
     
     (* Initialize the cube at the solved state *)
     method init () = 
-      for i = 0 to 11 do
-        edges.(i) <- {e_index = i; orientation = 0}
-      done;
-      for i = 0 to 7 do
-        corners.(i) <- {c_index = i; orientation = 0}
-      done;
-      for i = 0 to 5 do
-        centers.(i) <- {color = color_of_int i}
-      done;
+      Array.iteri (fun i _ -> edges.(i) <- {e_index = i; orientation = 0}) edges;
+      Array.iteri (fun i _ -> corners.(i) <- {c_index = i; orientation = 0}) corners;
+      Array.iteri (fun i _ -> centers.(i) <- {color = color_of_int i}) centers;
 
 
     method copy () =
       let new_cube = new rubiks_cube in
-      for i = 0 to 11 do
+      Array.iteri (fun i _ -> (
         let index = self#get_edge_index (edge_enum_of_int i) in
         let orientation = self#get_edge_orientation (edge_enum_of_int i) in
         (new_cube#get_edges ()).(i) <- {e_index = index; orientation = orientation}
-      done;
-      for i = 0 to 7 do
+      )) edges;
+      Array.iteri (fun i _ -> (
         let index = self#get_corner_index (corner_enum_of_int i) in
         let orientation = self#get_corner_orientation (corner_enum_of_int i) in
         (new_cube#get_corners ()).(i) <- {c_index = index; orientation = orientation}
-      done;
-      for i = 0 to 5 do
+      )) corners;
+      Array.iteri (fun i _ -> (
         (new_cube#get_centers()).(i) <- {color = color_of_int i}
-      done;
+      )) centers;
       new_cube;
       
-    method is_same (cube: rubiks_cube) = 
-      let edges2 = cube#get_edges () in
-      let corners2 = cube#get_corners () in
-      let is_same_edge i = 
-        let edge1 = edges.(i) in
-        let edge2 = edges2.(i) in
-        edge1.e_index = edge2.e_index && edge1.orientation = edge2.orientation
-      in
-      let is_same_corner i = 
-        let corner1 = corners.(i) in
-        let corner2 = corners2.(i) in
-        corner1.c_index = corner2.c_index && corner1.orientation = corner2.orientation
-      in
-      let is_same_center i = 
-        let center1 = centers.(i) in
-        let center2 = (cube#get_centers ()).(i) in
-        center1.color = center2.color
-      in
-      let rec loop_edges i = 
-        if i = 12 then true
-        else if is_same_edge i then loop_edges (i+1)
-        else false
-      in
-      let rec loop_corners i = 
-        if i = 8 then true
-        else if is_same_corner i then loop_corners (i+1)
-        else false
-      in
-      let rec loop_centers i = 
-        if i = 6 then true
-        else if is_same_center i then loop_centers (i+1)
-        else false
-      in
-      loop_edges 0 && loop_corners 0 && loop_centers 0;
+
+    method get_edge_index edge = edges.(int_of_edge_enum edge).e_index;
+    method get_corner_index corner = corners.(int_of_corner_enum corner).c_index;
+
+    method get_edge_orientation edge = edges.(int_of_edge_enum edge).orientation;
+    method get_corner_orientation corner = corners.(int_of_corner_enum corner).orientation;
 
     (* 
-    Return array with the two edge colors
-    If the orientation of the edge is flipped, the colors are flipped   
+      Return array with the two edge colors
+      If the orientation of the edge is flipped, the colors are flipped   
     *)
     method get_edge_colors index =
       let colors = Array.make 2 WHITE in
       let edge = edges.(index) in
-      let set_colors first second =
+      let get_edge_colors_aux first second =
         if edge.orientation = 0 then (
           colors.(0) <- first;
           colors.(1) <- second;
@@ -115,18 +77,18 @@ class rubiks_cube =
         )
       in 
       match (edge_enum_of_int edge.e_index) with
-      | UB -> set_colors RED      YELLOW;   colors;
-      | UR -> set_colors RED      GREEN;    colors;
-      | UF -> set_colors RED      WHITE;    colors;
-      | UL -> set_colors RED      BLUE;     colors;
-      | FR -> set_colors WHITE    GREEN;    colors;
-      | FL -> set_colors WHITE    BLUE;     colors;
-      | BL -> set_colors YELLOW   BLUE;     colors;
-      | BR -> set_colors YELLOW   GREEN;    colors;
-      | DF -> set_colors ORANGE   WHITE;    colors;
-      | DL -> set_colors ORANGE   BLUE;     colors;
-      | DB -> set_colors ORANGE   YELLOW;   colors;
-      | DR -> set_colors ORANGE   GREEN;    colors;
+      | UB -> get_edge_colors_aux RED      YELLOW;   colors;
+      | UR -> get_edge_colors_aux RED      GREEN;    colors;
+      | UF -> get_edge_colors_aux RED      WHITE;    colors;
+      | UL -> get_edge_colors_aux RED      BLUE;     colors;
+      | FR -> get_edge_colors_aux WHITE    GREEN;    colors;
+      | FL -> get_edge_colors_aux WHITE    BLUE;     colors;
+      | BL -> get_edge_colors_aux YELLOW   BLUE;     colors;
+      | BR -> get_edge_colors_aux YELLOW   GREEN;    colors;
+      | DF -> get_edge_colors_aux ORANGE   WHITE;    colors;
+      | DL -> get_edge_colors_aux ORANGE   BLUE;     colors;
+      | DB -> get_edge_colors_aux ORANGE   YELLOW;   colors;
+      | DR -> get_edge_colors_aux ORANGE   GREEN;    colors;
        
       
     (* 
@@ -136,7 +98,7 @@ class rubiks_cube =
     method get_corner_colors index =
       let colors = Array.make 3 WHITE in
       let corner = corners.(index) in
-      let set_color first second third = 
+      let get_corner_colors_aux first second third = 
         if corner.orientation = 0 then (
           colors.(0) <- first;
           colors.(1) <- second;
@@ -173,14 +135,14 @@ class rubiks_cube =
         )
       in
       match (corner_enum_of_int corner.c_index) with
-      | ULB -> set_color RED      BLUE     YELLOW;  colors;
-      | URB -> set_color RED      GREEN    YELLOW;  colors;
-      | URF -> set_color RED      GREEN    WHITE;   colors;
-      | ULF -> set_color RED      BLUE     WHITE;   colors;
-      | DRF -> set_color ORANGE   GREEN    WHITE;   colors;
-      | DLF -> set_color ORANGE   BLUE     WHITE;   colors;
-      | DLB -> set_color ORANGE   BLUE     YELLOW;  colors;
-      | DRB -> set_color ORANGE   GREEN    YELLOW;  colors;
+      | ULB -> get_corner_colors_aux RED      BLUE     YELLOW;  colors;
+      | URB -> get_corner_colors_aux RED      GREEN    YELLOW;  colors;
+      | URF -> get_corner_colors_aux RED      GREEN    WHITE;   colors;
+      | ULF -> get_corner_colors_aux RED      BLUE     WHITE;   colors;
+      | DRF -> get_corner_colors_aux ORANGE   GREEN    WHITE;   colors;
+      | DLF -> get_corner_colors_aux ORANGE   BLUE     WHITE;   colors;
+      | DLB -> get_corner_colors_aux ORANGE   BLUE     YELLOW;  colors;
+      | DRB -> get_corner_colors_aux ORANGE   GREEN    YELLOW;  colors;
 
 
     method get_facette_color face row col = 
@@ -253,12 +215,6 @@ class rubiks_cube =
         | _, _, _ -> failwith "Invalid face or position"
       );
 
-
-    method get_edge_index edge = edges.(int_of_edge_enum edge).e_index
-    method get_corner_index corner = corners.(int_of_corner_enum corner).c_index;
-
-    method get_edge_orientation edge = edges.(int_of_edge_enum edge).orientation;
-    method get_corner_orientation corner = corners.(int_of_corner_enum corner).orientation;
 
     (*
       Return a boolean indicating if the cube is solved or not.

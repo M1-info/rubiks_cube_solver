@@ -1,45 +1,45 @@
-open Utils_module.Types
-open Utils_module.Functions
-open Utils_module.Utils
+open Utils_module
 open Rubiks_cube
-open Indexers
+(* open Indexers *)
 
 class pattern_database = 
   object (self)
-    val mutable group_1 = {size = 0; data = [||]}
-    val mutable group_2 = {size = 0; data = [||]}
-    val mutable group_3 = {size = 0; data = [||]}
-    val mutable group_4 = {size = 0; data = [||]}
+    val mutable group_0_to_1: Types.database = {size = 0; data = [||]}
+    val mutable group_1_to_2: Types.database = {size = 0; data = [||]}
+    val mutable group_2_to_3: Types.database = {size = 0; data = [||]}
+    val mutable group_3_to_4: Types.database = {size = 0; data = [||]}
 
   method init () =
-    self#load_group_1;
-    self#load_group_2;
-    self#load_group_3;
-    self#load_group_4;
+    self#load_group_0_to_1;
+    self#load_group_1_to_2;
+    self#load_group_2_to_3;
+    self#load_group_3_to_4;
 
-  method get_group_1 () = group_1;
-  method get_group_2 () = group_2;
-  method get_group_3 () = group_3;
-  method get_group_4 () = group_4;
+  (* Getters *)
+  method get_group_0_to_1 () = group_0_to_1;
+  method get_group_1_to_2 () = group_1_to_2;
+  method get_group_2_to_3 () = group_2_to_3;
+  method get_group_3_to_4 () = group_3_to_4;
 
-  method load_group_1 = group_1 <- load_file "src/databases/thistlethwiateG1.pdb";
-  method load_group_2 = group_2 <- load_file "src/databases/thistlethwiateG2.pdb";
-  method load_group_3 = group_3 <- load_file "src/databases/thistlethwiateG3.pdb";
-  method load_group_4 = group_4 <- load_file "src/databases/thistlethwiateG4.pdb";
+  (* Pattern databases loaders *)
+  method load_group_0_to_1 = group_0_to_1 <- Functions.load_file "src/databases/thistlethwiateG1.pdb";
+  method load_group_1_to_2 = group_1_to_2 <- Functions.load_file "src/databases/thistlethwiateG2.pdb";
+  method load_group_2_to_3 = group_2_to_3 <- Functions.load_file "src/databases/thistlethwiateG3.pdb";
+  method load_group_3_to_4 = group_3_to_4 <- Functions.load_file "src/databases/thistlethwiateG4.pdb";
 
   method get_group = function
-    | 0 -> self#get_group_1 ()
-    | 1 -> self#get_group_2 ()
-    | 2 -> self#get_group_3 ()
-    | 3 -> self#get_group_4 ()
+    | 0 -> self#get_group_0_to_1 ()
+    | 1 -> self#get_group_1_to_2 ()
+    | 2 -> self#get_group_2_to_3 ()
+    | 3 -> self#get_group_3_to_4 ()
     | _ -> failwith "Invalid group number"
 
-  method get_index group cube = 
-    match group with 
-    | 0 -> self#get_index_group_1 cube
-    | 1 -> self#get_index_group_2 cube
-    | 2 -> self#get_index_group_3 cube
-    | 3 -> self#get_index_group_4 cube
+  method get_index group_index cube = 
+    match group_index with 
+    | 0 -> self#get_index_group_0_to_1 cube
+    | 1 -> self#get_index_group_1_to_2 cube
+    | 2 -> self#get_index_group_2_to_3 cube
+    | 3 -> self#get_index_group_3_to_4 cube
     | _ -> failwith "Invalid group number"
 
   (*
@@ -63,14 +63,14 @@ class pattern_database =
     DL = 2
     DB = 0
   *)
-  method get_index_group_1 (cube: rubiks_cube) = 
+  method get_index_group_0_to_1 (cube: rubiks_cube) = 
     let edges = (cube#get_edges ()) in
-    Array.fold_left (fun acc edge -> 
-      if edge.e_index = int_of_edge_enum DR then acc 
+    Array.fold_left (fun acc (edge: Types.edge) -> 
+      if edge.e_index = Utils.int_of_edge_enum DR then acc 
       else (
-        let orientation = cube#get_edge_orientation (edge_enum_of_int edge.e_index) in
-        let exponent = exponent_of_edge (edge_enum_of_int edge.e_index) in
-        acc + ((pow 2 exponent) * orientation);
+        let orientation = cube#get_edge_orientation (Utils.edge_enum_of_int edge.e_index) in
+        let exponent = Utils.exponent_of_edge (Utils.edge_enum_of_int edge.e_index) in
+        acc + ((Functions.pow 2 exponent) * orientation);
       )
     ) 0 edges;
 
@@ -93,94 +93,94 @@ class pattern_database =
     ULB = 3
     DBL = 0    
   *)
-  method get_index_group_2 (cube: rubiks_cube) = 
+  method get_index_group_1_to_2 (cube: rubiks_cube) = 
     let edges = cube#get_edges () in
 
-    let edges_length = Array.length edges in
-
-    let edge_combinations = Array.make 4 0 in 
-    let combinations_index = ref 0 in 
-    for i = 0 to edges_length - 1 do 
-      if !combinations_index < 4 then (
-        let edge_index = cube#get_edge_index (edge_enum_of_int i) in
-        if (
-          edge_index = int_of_edge_enum FR ||
-          edge_index = int_of_edge_enum FL ||
-          edge_index = int_of_edge_enum BL ||
-          edge_index = int_of_edge_enum BR
-        ) then (
-          edge_combinations.(!combinations_index) <- i;
-          combinations_index := !combinations_index + 1;
-        )
-      );
-    done;
-
-    let rank = combinations_indexer edge_combinations 12 4 in
-
-    let corner_orientations = [|
-      cube#get_corner_orientation ULB;
-      cube#get_corner_orientation URB;
-      cube#get_corner_orientation URF;
-      cube#get_corner_orientation ULF;
-      cube#get_corner_orientation DLF;
-      cube#get_corner_orientation DLB;
-      cube#get_corner_orientation DRB;
-    |] in
-
-    let orientation_corners_num = 
-      corner_orientations.(0) * 729 +
-      corner_orientations.(1) * 243 +
-      corner_orientations.(2) * 81 +
-      corner_orientations.(3) * 27 +
-      corner_orientations.(4) * 9 +
-      corner_orientations.(5) * 3 +
-      corner_orientations.(6)
+    let get_edge_combinations cube edges =
+      let edges_length = Array.length edges in
+      let rec loop_combinations comb comb_index i =
+        if i = edges_length - 1 || comb_index >= 4 then comb
+        else
+          let edge_index = cube#get_edge_index (Utils.edge_enum_of_int i) in
+          if (
+            edge_index = Utils.int_of_edge_enum Types.FR ||
+            edge_index = Utils.int_of_edge_enum Types.FL ||
+            edge_index = Utils.int_of_edge_enum Types.BL ||
+            edge_index = Utils.int_of_edge_enum Types.BR
+          ) then
+            (comb.(comb_index) <- i;
+             loop_combinations comb (comb_index + 1) (i + 1))
+          else
+            loop_combinations comb comb_index (i + 1)
+      in
+      loop_combinations (Array.make 4 0) 0 0
     in
 
+    let edge_combinations = get_edge_combinations cube edges in
+    let rank = Int.abs (Indexers.combinations_indexer edge_combinations 12 4) in
+
+    let corner_orientations = [|
+      (Types.ULB , cube#get_corner_orientation Types.ULB);
+      (Types.URB , cube#get_corner_orientation Types.URB);
+      (Types.URF , cube#get_corner_orientation Types.URF);
+      (Types.ULF , cube#get_corner_orientation Types.ULF);
+      (Types.DLF , cube#get_corner_orientation Types.DLF);
+      (Types.DLB , cube#get_corner_orientation Types.DLB);
+      (Types.DRB , cube#get_corner_orientation Types.DRB);
+    |] in
+
+    let orientation_corners_num = Array.fold_left (fun acc (enum, orientation) -> 
+      acc + ((Functions.pow 3 (Utils.exponent_of_corner enum)) * orientation)
+    ) 0 corner_orientations in
+
     (* 2187 = 3^7 (7 are the corners and 3 because they are indexed in base 3) *)
-    let index = (rank * 2187) + orientation_corners_num in
-    index;
+    (rank * 2187) + orientation_corners_num;
 
 
-  method get_index_group_3 (cube: rubiks_cube) =
-    let pairs = [| (ULB , URF) ; (DLF , DRB) ; (URB , ULF) ; (DLB , DRF) |] in
+  method get_index_group_2_to_3 (cube: rubiks_cube) =
+    let pairs = [| 
+      (Types.ULB , Types.URF) ; 
+      (Types.DLF , Types.DRB) ; 
+      (Types.URB , Types.ULF) ; 
+      (Types.DLB , Types.DRF) |] 
+    in
     let corners_pair = Array.make 4 (Array.make 2 0) in 
 
     Array.iteri (fun index _ -> 
-      corners_pair.(index) <- compute_tetrad_pair cube pairs.(index);
+      corners_pair.(index) <- Indexers.compute_tetrad_pair cube pairs.(index);
     ) pairs;
 
-    let corners_rank = pair_indexer corners_pair 8 in 
+    let corners_rank = Indexers.pair_indexer corners_pair 8 in 
 
     let all_edges = cube#get_edges () in
     let edges_length = Array.length all_edges in
 
     (* let edges_map = [|0;1;2;3;0;0;0;0;4;5;6;7|] in *)
     let edges_map = Array.make edges_length 0 in
-    edges_map.(int_of_edge_enum UB) <- 0;
-    edges_map.(int_of_edge_enum UR) <- 1;
-    edges_map.(int_of_edge_enum UF) <- 2;
-    edges_map.(int_of_edge_enum UL) <- 3;
-    edges_map.(int_of_edge_enum FR) <- 3;
-    edges_map.(int_of_edge_enum FL) <- 6;
-    edges_map.(int_of_edge_enum BL) <- 4;
-    edges_map.(int_of_edge_enum BR) <- 5;
-    edges_map.(int_of_edge_enum DF) <- 4;
-    edges_map.(int_of_edge_enum DL) <- 5;
-    edges_map.(int_of_edge_enum DB) <- 6;
-    edges_map.(int_of_edge_enum DR) <- 7;
+    edges_map.(Utils.int_of_edge_enum Types.UB) <- 0;
+    edges_map.(Utils.int_of_edge_enum Types.UR) <- 1;
+    edges_map.(Utils.int_of_edge_enum Types.UF) <- 2;
+    edges_map.(Utils.int_of_edge_enum Types.UL) <- 3;
+    edges_map.(Utils.int_of_edge_enum Types.FR) <- 3;
+    edges_map.(Utils.int_of_edge_enum Types.FL) <- 6;
+    edges_map.(Utils.int_of_edge_enum Types.BL) <- 4;
+    edges_map.(Utils.int_of_edge_enum Types.BR) <- 5;
+    edges_map.(Utils.int_of_edge_enum Types.DF) <- 4;
+    edges_map.(Utils.int_of_edge_enum Types.DL) <- 5;
+    edges_map.(Utils.int_of_edge_enum Types.DB) <- 6;
+    edges_map.(Utils.int_of_edge_enum Types.DR) <- 7;
 
     let edge_combinations = Array.make 4 0 in 
     let edge_combinations_index = ref 0 in
 
     for i = 0 to (edges_length - 1) do
       if(!edge_combinations_index < 4) then (
-        let edge_index = cube#get_edge_index (edge_enum_of_int i) in
+        let edge_index = cube#get_edge_index (Utils.edge_enum_of_int i) in
         if  (
-              edge_index = int_of_edge_enum UB || 
-              edge_index = int_of_edge_enum UF ||
-              edge_index = int_of_edge_enum DF ||
-              edge_index = int_of_edge_enum DB
+              edge_index = Utils.int_of_edge_enum Types.UB || 
+              edge_index = Utils.int_of_edge_enum Types.UF ||
+              edge_index = Utils.int_of_edge_enum Types.DF ||
+              edge_index = Utils.int_of_edge_enum Types.DB
             ) 
             then (
               edge_combinations.(!edge_combinations_index) <- edges_map.(i);
@@ -189,15 +189,15 @@ class pattern_database =
       );
     done;
     
-    let edges_rank = combinations_indexer edge_combinations 8 4 in
+    let edges_rank = Indexers.combinations_indexer edge_combinations 8 4 in
 
-    (* let parity = get_corners_parity (cube#get_corners ()) in *)
     let corners_length = Array.length (cube#get_corners ()) in
     let parity = ref 0 in 
     for i = 0 to corners_length - 1 do
       for j = i + 1 to corners_length - 1 do
-        let v = if (cube#get_corner_index (corner_enum_of_int i)) < (cube#get_corner_index (corner_enum_of_int j)) then 1 else 0 in
-        parity := !parity lxor v;
+        let v = if (cube#get_corner_index (Utils.corner_enum_of_int i)) < (cube#get_corner_index (Utils.corner_enum_of_int j)) 
+                then 1 else 0 
+        in parity := !parity lxor v;
       done;
     done;
 
@@ -205,88 +205,92 @@ class pattern_database =
     (edges_rank * 2520 + corners_rank) * 2 + !parity;
 
 
-  method get_index_group_4 (cube: rubiks_cube) = 
+  method get_index_group_3_to_4 (cube: rubiks_cube) = 
 
     let edges_map = Array.make 12 0 in
 
     (* M slice edges *)
-    edges_map.(int_of_edge_enum UB) <- 0;
-    edges_map.(int_of_edge_enum UF) <- 1;
-    edges_map.(int_of_edge_enum DF) <- 2;
-    edges_map.(int_of_edge_enum DB) <- 3;
+    edges_map.(Utils.int_of_edge_enum Types.UB) <- 0;
+    edges_map.(Utils.int_of_edge_enum Types.UF) <- 1;
+    edges_map.(Utils.int_of_edge_enum Types.DF) <- 2;
+    edges_map.(Utils.int_of_edge_enum Types.DB) <- 3;
 
     (* S slice edges *)
-    edges_map.(int_of_edge_enum UR) <- 0;
-    edges_map.(int_of_edge_enum UL) <- 1;
-    edges_map.(int_of_edge_enum DL) <- 2;
-    edges_map.(int_of_edge_enum DR) <- 3;
+    edges_map.(Utils.int_of_edge_enum Types.UR) <- 0;
+    edges_map.(Utils.int_of_edge_enum Types.UL) <- 1;
+    edges_map.(Utils.int_of_edge_enum Types.DL) <- 2;
+    edges_map.(Utils.int_of_edge_enum Types.DR) <- 3;
 
     (* E slice edges *)
-    edges_map.(int_of_edge_enum FR) <- 0;
-    edges_map.(int_of_edge_enum FL) <- 1;
-    edges_map.(int_of_edge_enum BL) <- 2;
-    edges_map.(int_of_edge_enum BR) <- 3;
+    edges_map.(Utils.int_of_edge_enum Types.FR) <- 0;
+    edges_map.(Utils.int_of_edge_enum Types.FL) <- 1;
+    edges_map.(Utils.int_of_edge_enum Types.BL) <- 2;
+    edges_map.(Utils.int_of_edge_enum Types.BR) <- 3;
 
     let m_edges = [| 
-      edges_map.(cube#get_edge_index UB);
-      edges_map.(cube#get_edge_index UF);
-      edges_map.(cube#get_edge_index DF);
-      edges_map.(cube#get_edge_index DB);
+      edges_map.(cube#get_edge_index Types.UB);
+      edges_map.(cube#get_edge_index Types.UF);
+      edges_map.(cube#get_edge_index Types.DF);
+      edges_map.(cube#get_edge_index Types.DB);
     |] in
 
     let s_edges = [| 
-      edges_map.(cube#get_edge_index UR);
-      edges_map.(cube#get_edge_index UL);
-      edges_map.(cube#get_edge_index DL);
-      edges_map.(cube#get_edge_index DR);
+      edges_map.(cube#get_edge_index Types.UR);
+      edges_map.(cube#get_edge_index Types.UL);
+      edges_map.(cube#get_edge_index Types.DL);
+      edges_map.(cube#get_edge_index Types.DR);
     |] in
 
     let e_edges = [|
-      edges_map.(cube#get_edge_index FR);
-      edges_map.(cube#get_edge_index FL);
+      edges_map.(cube#get_edge_index Types.FR);
+      edges_map.(cube#get_edge_index Types.FL);
     |] in
 
-    let m_rank = permutations_indexer m_edges 4 4 in 
-    let s_rank = permutations_indexer s_edges 4 4 in
-    let e_rank = permutations_indexer e_edges 4 2 in
+    let m_rank = Indexers.permutations_indexer m_edges 4 4 in 
+    let s_rank = Indexers.permutations_indexer s_edges 4 4 in
+    let e_rank = Indexers.permutations_indexer e_edges 4 2 in
 
     let edges_rank = m_rank * 288 + s_rank * 12 + e_rank in 
 
     let corner_map = Array.make 8 0 in 
 
-    corner_map.(int_of_corner_enum ULB) <- 0;
-    corner_map.(int_of_corner_enum URF) <- 1;
-    corner_map.(int_of_corner_enum DLF) <- 2;
-    corner_map.(int_of_corner_enum DRB) <- 3;
+    corner_map.(Utils.int_of_corner_enum Types.ULB) <- 0;
+    corner_map.(Utils.int_of_corner_enum Types.URF) <- 1;
+    corner_map.(Utils.int_of_corner_enum Types.DLF) <- 2;
+    corner_map.(Utils.int_of_corner_enum Types.DRB) <- 3;
 
-    corner_map.(int_of_corner_enum URB) <- 0;
-    corner_map.(int_of_corner_enum ULF) <- 1;
-    corner_map.(int_of_corner_enum DLB) <- 2;
-    corner_map.(int_of_corner_enum DRF) <- 3;
+    corner_map.(Utils.int_of_corner_enum Types.URB) <- 0;
+    corner_map.(Utils.int_of_corner_enum Types.ULF) <- 1;
+    corner_map.(Utils.int_of_corner_enum Types.DLB) <- 2;
+    corner_map.(Utils.int_of_corner_enum Types.DRF) <- 3;
 
     let tetrad_pair = [|
-      corner_map.(cube#get_corner_index ULB);
-      corner_map.(cube#get_corner_index URF);
-      corner_map.(cube#get_corner_index DLF);
-      corner_map.(cube#get_corner_index DRB);
+      corner_map.(cube#get_corner_index Types.ULB);
+      corner_map.(cube#get_corner_index Types.URF);
+      corner_map.(cube#get_corner_index Types.DLF);
+      corner_map.(cube#get_corner_index Types.DRB);
     |] in
 
-    let corner = corner_map.(cube#get_corner_index URB) in
-    let tetrad_rank = permutations_indexer tetrad_pair 4 4 in
+    let corner = corner_map.(cube#get_corner_index Types.URB) in
+    let tetrad_rank = Indexers.permutations_indexer tetrad_pair 4 4 in
     let corner_rank = tetrad_rank * 4 + corner in
 
     (* 96 = 4!*4 *)
     edges_rank * 96 + corner_rank;
 
-  method get_num_moves index group = 
+
+  (* Get the value of a index in a specific group *)
+  method get_num_moves (index: int) (group: Types.database) = 
     let i = index / 2 in
     let value = group.data.(i) in
 
+    (* Data is stored in 1 bytes, and we need to get the MBS or the LBS depends if the index is odd or even *)
     if index mod 2 <> 0 then (int_of_char value) land 0x0F
     else ((int_of_char value) lsr 4);
 
 
-  method set_num_moves group index num_moves = 
+  (* Set the value of a index in a specific group *)
+  method set_num_moves (index: int) (group: Types.database) (num_moves: int) = 
     let old_num_moves = self#get_num_moves index group in
 
     if old_num_moves = 0xF then (
