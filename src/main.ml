@@ -3,85 +3,72 @@ open Classes_module.Solver
 open Classes_module.Rubiks_cube
 open Classes_module.Pattern_database
 open Classes_module.Goals
-open Utils_module.Utils
-open Utils_module.Moves_store;;
+open Utils_module.Moves_pruner
+open Utils_module.Moves_store
 
+let solve_cube () = 
+  let cube = new rubiks_cube in
+  cube#init ();
+  cube#scramble 100;
+  print_newline ();
+  print_string "Start cube:";
+  cube#show_cube;
+  print_string "------------------";
+  print_newline ();
 
-let cube = new rubiks_cube;;
-cube#init ();;
+  let pattern_database = new pattern_database in 
+  pattern_database#init ();
 
-cube#scramble 100;;
-print_newline ();;
-print_string "Start cube:";;
-print_newline ();;
-cube#show_cube;;
-print_string "------------------";;
-print_newline ();;
+  let moves = [| Types.All_Moves; Types.Moves_Group_1; Types.Moves_Group_2; Types.Moves_Group_3 |] in
+  let goals = [| Types.Goal_1; Types.Goal_2; Types.Goal_3; Types.Goal_4 |] in
+  let groups = [| Types.Group_0_1; Types.Group_1_2; Types.Group_2_3; Types.Group_3_4 |] in
 
-let pattern_database = new pattern_database;;
-pattern_database#init ();;
+  let start_time = Sys.time() in
 
-print_string "------------------";;
-(* Group 1 *)
+  let rec solve_cube_aux cube founded_moves i =
+    if i = 4 then founded_moves
+    else (
+      let goal = get_goal goals.(i) in
+      let moves_store = get_moves moves.(i) in
+      let group = groups.(i) in
+      print_string "Goal ";
+      print_int i;
+      print_string " started !";
+      print_newline ();
 
-let goal_1 = get_goal Types.Goal_1;;
-let moves_store_1 = get_moves Types.All_Moves;;
+      let moves_g = ida_star pattern_database cube group goal moves_store in
 
-let moves_g1 = ida_star pattern_database cube Types.Group_0_1 goal_1 moves_store_1;;
-List.iter (fun x -> print_string (string_of_move x); print_string " ") moves_g1;;
+      
+      let moves = founded_moves@moves_g in
+      cube#apply_moves moves_g;
+      
+      cube#show_cube;
+      print_newline ();
+      print_string "Goal : ";
+      print_int i;
+      print_string " solved in : ";
+      print_int (List.length moves_g);
+      print_string " moves !";
+      print_newline ();
+      print_string "------------------";
+      print_newline ();
+      solve_cube_aux cube moves (i + 1);
+    )
+  in 
+  let solve_moves = solve_cube_aux cube [] 0 in
+  let simplified_moves = simplify_list_moves solve_moves in
 
-cube#apply_moves moves_g1;;
+  print_string "Cube solved in : ";
+  print_int (List.length simplified_moves);
+  print_string " moves !";
+  print_newline ();
+  print_string "Time : ";
+  print_float (Sys.time() -. start_time);
+  print_string " seconds !";
+  print_newline ();
+;;
 
-cube#show_cube;;
-
-print_string "------------------";;
-(* Group 2 *)
-
-let goal_2 = get_goal Types.Goal_2;;
-
-let moves_store_2 = get_moves Types.Moves_Group_1;;
-
-let moves_g2 = ida_star pattern_database cube Types.Group_1_2 goal_2 moves_store_2;;
-List.iter (fun x -> print_string (string_of_move x); print_string " ") moves_g2;;
-
-cube#apply_moves moves_g2;;
-
-cube#show_cube;;
-
-(* Group 3 *)
-
-print_string "------------------";;
-
-let goal_3 = get_goal Types.Goal_3;;
-
-let moves_store_3 = get_moves Types.Moves_Group_2;;
-
-let moves_g3 = ida_star pattern_database cube Types.Group_2_3 goal_3 moves_store_3;;
-
-List.iter (fun x -> print_string (string_of_move x); print_string " ") moves_g3;;
-
-cube#apply_moves moves_g3;;
-
-cube#show_cube;;
-
-(* Group 4 *)
-
-print_string "------------------";;
-
-let goal_4 = get_goal Types.Goal_4;;
-
-let moves_store_4 = get_moves Types.Moves_Group_3;;
-
-let moves_g4 = ida_star pattern_database cube Types.Group_3_4 goal_4 moves_store_4;;
-
-List.iter (fun x -> print_string (string_of_move x); print_string " ") moves_g4;;
-
-cube#apply_moves moves_g4;;
-
-cube#show_cube;;
-
-(* Group 5 *)
-
+solve_cube ();;
 
 
   

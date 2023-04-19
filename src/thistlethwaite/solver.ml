@@ -96,7 +96,6 @@ let ida_star (database: pattern_database) (rubiks_cube: rubiks_cube) group_index
       done;
     );
     done;
-  
   let moves_list = ref [] in
   let rec get_moves i =
     if i = Array.length moves || moves.(i) = None then ()
@@ -105,7 +104,8 @@ let ida_star (database: pattern_database) (rubiks_cube: rubiks_cube) group_index
       get_moves (i + 1);
     );
   in get_moves 0;
-  List.rev !moves_list;;
+  List.rev !moves_list
+;;
 
 
 let database_indexer (database: pattern_database) group_index goal solved_cube moves_store = 

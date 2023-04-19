@@ -46,6 +46,18 @@ let simplify_moves = function
   | _, _ -> None;;
 
 
+let simplify_list_moves moves = 
+  let rec aux acc moves = 
+    match moves with
+    | [] -> List.rev acc
+    | [x] -> List.rev (x::acc)
+    | x::y::xs -> 
+      match simplify_moves (x,y) with
+      | None -> aux (x::acc) (y::xs)
+      | move -> aux (move::acc) xs
+  in aux [] moves;;
+
+
 let prune_move move last_move = 
   match move, last_move with
    
