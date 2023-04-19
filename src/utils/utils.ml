@@ -154,7 +154,8 @@ let string_of_move = function
   | B       -> "b"
   | B2      -> "b_2"
   | BPRIME  -> "b_prime"
-  | None    -> "";;
+  | None    -> ""
+  | NoMove    -> "";;
 
 
 let string_of_color = function 

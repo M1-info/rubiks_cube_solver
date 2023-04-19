@@ -9,7 +9,7 @@ open Utils_module.Moves_store
 let solve_cube () = 
   let cube = new rubiks_cube in
   cube#init ();
-  cube#scramble 100;
+  cube#scramble 200;
   print_newline ();
   print_string "Start cube:";
   cube#show_cube;
@@ -38,7 +38,8 @@ let solve_cube () =
 
       let moves_g = ida_star pattern_database cube group goal moves_store in
 
-      
+      let moves_g = simplify_list_moves moves_g in
+
       let moves = founded_moves@moves_g in
       cube#apply_moves moves_g;
       
@@ -52,9 +53,11 @@ let solve_cube () =
       print_newline ();
       print_string "------------------";
       print_newline ();
+
       solve_cube_aux cube moves (i + 1);
     )
   in 
+  
   let solve_moves = solve_cube_aux cube [] 0 in
   let simplified_moves = simplify_list_moves solve_moves in
 

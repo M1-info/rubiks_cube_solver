@@ -255,7 +255,7 @@ class pattern_database =
 
       We also got parity for corners in the previous group, and with half of twists (180°)
       is not possible for 3 corners to be out of place.
-      That mean that 4!*4!/(2*3) = 96 corner permutations are reachable.
+      That mean that 4!*4! / (2*3) = 96 corner permutations are reachable.
 
       In total this database store : 6912 * 96 = 663552 values
 

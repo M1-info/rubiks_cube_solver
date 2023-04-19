@@ -8,19 +8,19 @@ let simplify_moves = function
   | B, B -> B2
   | F, F -> F2
 
-  | L, LPRIME | LPRIME, L -> None
-  | R, RPRIME | RPRIME, R -> None
-  | D, DPRIME | DPRIME, D -> None
-  | U, UPRIME | UPRIME, U -> None
-  | B, BPRIME | BPRIME, B -> None
-  | F, FPRIME | FPRIME, F -> None
+  | L, LPRIME | LPRIME, L -> NoMove
+  | R, RPRIME | RPRIME, R -> NoMove
+  | D, DPRIME | DPRIME, D -> NoMove
+  | U, UPRIME | UPRIME, U -> NoMove
+  | B, BPRIME | BPRIME, B -> NoMove
+  | F, FPRIME | FPRIME, F -> NoMove
 
-  | L2, L2 -> None
-  | R2, R2 -> None
-  | D2, D2 -> None
-  | U2, U2 -> None
-  | B2, B2 -> None
-  | F2, F2 -> None
+  | L2, L2 -> NoMove
+  | R2, R2 -> NoMove
+  | D2, D2 -> NoMove
+  | U2, U2 -> NoMove
+  | B2, B2 -> NoMove
+  | F2, F2 -> NoMove
 
   | L2, L | L, L2 -> LPRIME
   | R2, R | R, R2 -> RPRIME
@@ -54,6 +54,7 @@ let simplify_list_moves moves =
     | x::y::xs -> 
       match simplify_moves (x,y) with
       | None -> aux (x::acc) (y::xs)
+      | NoMove -> aux acc xs
       | move -> aux (move::acc) xs
   in aux [] moves;;
 
