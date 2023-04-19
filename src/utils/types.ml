@@ -25,8 +25,6 @@ type database = {
     mutable data: char array;
 };;
 
-type group = 
-    Group_G0_G1 of database | 
-    Group_G1_G2 of database | 
-    Group_G2_G3 of database | 
-    Group_G3_G4 of database;;  
+type group = Group_0_1| Group_1_2| Group_2_3| Group_3_4;;  
+type goals = Goal_1 | Goal_2 | Goal_3 | Goal_4;;
+type moves = All_Moves | Moves_Group_1 | Moves_Group_2 | Moves_Group_3;;

@@ -49,8 +49,7 @@ let g3_moves = [|
  |];;
 
  let get_moves = function
-  | 0 -> all_moves
-  | 1 -> g1_moves
-  | 2 -> g2_moves
-  | 3 -> g3_moves
-  | _ -> failwith "get_moves: invalid group";;
+  | Types.All_Moves -> all_moves
+  | Types.Moves_Group_1 -> g1_moves
+  | Types.Moves_Group_2 -> g2_moves
+  | Types.Moves_Group_3 -> g3_moves

@@ -1,6 +1,6 @@
+open Utils_module
 open Utils_module.Types
 open Utils_module.Utils
-open Utils_module.Moves_store
 
 (* 
   The cube is represented by 12 edges, 8 corners and 6 centers
@@ -10,12 +10,15 @@ open Utils_module.Moves_store
 
   Orientation are based from the solved state
   The orientation of an edge is 0 (not flipped) or 1 (flipped)
-  The orientation of a corner is 0, 1 or 2
+  The orientation of a corner is 0 (not flipped), 1 or 2 (flipped)
 
-  We prefer to store the edge and corner enums instead of the index
-  because it's easier to understand and to manipulate
-  but we need to convert them to index to access the array
-  so we have a function some functions to do that (see utils/utils.ml)
+  Each corner and edge has a unique index
+
+  Edges : 
+  UB = 0, UR = 1, UF = 2, UL = 3, FR = 4, FL = 5, BL = 6, BR = 7, DF = 8, DL = 9, DB = 10, DR = 11
+
+  Corners :
+  ULB = 0, URB = 1, URF = 2, ULF = 3, DLF = 4, DLB = 5, DRB = 6, DRF = 7
 *)
 class rubiks_cube = 
   object (self)
@@ -28,7 +31,12 @@ class rubiks_cube =
     method get_edges () = edges;
     method get_corners () = corners;
     method get_centers () = centers;
+    method get_edge_index edge = edges.(int_of_edge_enum edge).e_index;
+    method get_corner_index corner = corners.(int_of_corner_enum corner).c_index;
+    method get_edge_orientation edge = edges.(int_of_edge_enum edge).orientation;
+    method get_corner_orientation corner = corners.(int_of_corner_enum corner).orientation;
     
+
     (* Initialize the cube at the solved state *)
     method init () = 
       Array.iteri (fun i _ -> edges.(i) <- {e_index = i; orientation = 0}) edges;
@@ -53,12 +61,6 @@ class rubiks_cube =
       )) centers;
       new_cube;
       
-
-    method get_edge_index edge = edges.(int_of_edge_enum edge).e_index;
-    method get_corner_index corner = corners.(int_of_corner_enum corner).c_index;
-
-    method get_edge_orientation edge = edges.(int_of_edge_enum edge).orientation;
-    method get_corner_orientation corner = corners.(int_of_corner_enum corner).orientation;
 
     (* 
       Return array with the two edge colors
@@ -249,74 +251,65 @@ class rubiks_cube =
     (*
       In some moves, the orientation of the edges. 
       This method updates the orientation of the edges.
-      We use a bit to represent the orientation. 
+      We use a 1 or 0 to represent the edge orientation. 
       So we use xor to update the orientation to make it faster.
     *)
     method update_edge_orientation edge_enum = 
       let edge = edges.(int_of_edge_enum edge_enum) in
       edge.orientation <- edge.orientation lxor 1;
 
+    
+    (* Switchers - switch 4 corners of edges in the cube *)
+    method switch_corners (e_corners: corner_enum array) = 
+      let hold_corner = corners.(int_of_corner_enum e_corners.(0)) in
+      corners.(int_of_corner_enum e_corners.(0)) <- corners.(int_of_corner_enum e_corners.(1));
+      corners.(int_of_corner_enum e_corners.(1)) <- corners.(int_of_corner_enum e_corners.(2));
+      corners.(int_of_corner_enum e_corners.(2)) <- corners.(int_of_corner_enum e_corners.(3));
+      corners.(int_of_corner_enum e_corners.(3)) <- hold_corner;
+
+
+    method switch_edges (e_edges: edge_enum array) =
+      let hold_edge = edges.(int_of_edge_enum e_edges.(0)) in
+      edges.(int_of_edge_enum e_edges.(0)) <- edges.(int_of_edge_enum e_edges.(1));
+      edges.(int_of_edge_enum e_edges.(1)) <- edges.(int_of_edge_enum e_edges.(2));
+      edges.(int_of_edge_enum e_edges.(2)) <- edges.(int_of_edge_enum e_edges.(3));
+      edges.(int_of_edge_enum e_edges.(3)) <- hold_edge;
+
+
+    (* Swappers - swap two corners or two edges in the cube *)
+    method swap_corners c_corner_1 c_corner_2 = 
+      let hold_corner = corners.(int_of_corner_enum c_corner_1) in
+      corners.(int_of_corner_enum c_corner_1) <- corners.(int_of_corner_enum c_corner_2);
+      corners.(int_of_corner_enum c_corner_2) <- hold_corner;
+    
+    method swap_edges e_edge_1 e_edge_2 = 
+      let hold_edge = edges.(int_of_edge_enum e_edge_1) in
+      edges.(int_of_edge_enum e_edge_1) <- edges.(int_of_edge_enum e_edge_2);
+      edges.(int_of_edge_enum e_edge_2) <- hold_edge;
+
 
     (* Cube moves *)
     
     method u () = 
-      let hold_corner = corners.(int_of_corner_enum ULF) in
-      corners.(int_of_corner_enum ULF) <- corners.(int_of_corner_enum URF);
-      corners.(int_of_corner_enum URF) <- corners.(int_of_corner_enum URB);
-      corners.(int_of_corner_enum URB) <- corners.(int_of_corner_enum ULB);
-      corners.(int_of_corner_enum ULB) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum UL) in
-      edges.(int_of_edge_enum UL) <- edges.(int_of_edge_enum UF);
-      edges.(int_of_edge_enum UF) <- edges.(int_of_edge_enum UR);
-      edges.(int_of_edge_enum UR) <- edges.(int_of_edge_enum UB);
-      edges.(int_of_edge_enum UB) <- hold_edge; 
+      self#switch_corners [| ULF; URF; URB; ULB |];
+      self#switch_edges [| UL; UF; UR; UB |];
 
 
     method u_prime () =
-      let hold_corner = corners.(int_of_corner_enum ULB) in
-      corners.(int_of_corner_enum ULB) <- corners.(int_of_corner_enum URB);
-      corners.(int_of_corner_enum URB) <- corners.(int_of_corner_enum URF);
-      corners.(int_of_corner_enum URF) <- corners.(int_of_corner_enum ULF);
-      corners.(int_of_corner_enum ULF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum UB) in
-      edges.(int_of_edge_enum UB) <- edges.(int_of_edge_enum UR);
-      edges.(int_of_edge_enum UR) <- edges.(int_of_edge_enum UF);
-      edges.(int_of_edge_enum UF) <- edges.(int_of_edge_enum UL);
-      edges.(int_of_edge_enum UL) <- hold_edge;
+      self#switch_corners [| ULB; URB; URF; ULF |];
+      self#switch_edges [| UB; UR; UF; UL |];
 
     
     method u_2 () = 
-      let hold_corner = corners.(int_of_corner_enum ULB) in
-      corners.(int_of_corner_enum ULB) <- corners.(int_of_corner_enum URF);
-      corners.(int_of_corner_enum URF) <- hold_corner;
-
-      let hold_corner = corners.(int_of_corner_enum URB) in
-      corners.(int_of_corner_enum URB) <- corners.(int_of_corner_enum ULF);
-      corners.(int_of_corner_enum ULF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum UB) in
-      edges.(int_of_edge_enum UB) <- edges.(int_of_edge_enum UF);
-      edges.(int_of_edge_enum UF) <- hold_edge;
-
-      let hold_edge = edges.(int_of_edge_enum UR) in
-      edges.(int_of_edge_enum UR) <- edges.(int_of_edge_enum UL);
-      edges.(int_of_edge_enum UL) <- hold_edge;
+      self#swap_corners ULB URF;
+      self#swap_corners URB ULF;
+      self#swap_edges UB UF;
+      self#swap_edges UR UL;
 
     
     method l () = 
-      let hold_corner = corners.(int_of_corner_enum DLB) in
-      corners.(int_of_corner_enum DLB) <- corners.(int_of_corner_enum DLF);
-      corners.(int_of_corner_enum DLF) <- corners.(int_of_corner_enum ULF);
-      corners.(int_of_corner_enum ULF) <- corners.(int_of_corner_enum ULB);
-      corners.(int_of_corner_enum ULB) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum BL) in
-      edges.(int_of_edge_enum BL) <- edges.(int_of_edge_enum DL);
-      edges.(int_of_edge_enum DL) <- edges.(int_of_edge_enum FL);
-      edges.(int_of_edge_enum FL) <- edges.(int_of_edge_enum UL);
-      edges.(int_of_edge_enum UL) <- hold_edge;
+      self#switch_corners [| DLB; DLF; ULF; ULB |];
+      self#switch_edges [| BL; DL; FL; UL |];
 
       self#update_corner_orientation DLB 1;
       self#update_corner_orientation DLF 2;
@@ -325,17 +318,8 @@ class rubiks_cube =
 
 
     method l_prime () =
-      let hold_corner = corners.(int_of_corner_enum DLB) in
-      corners.(int_of_corner_enum DLB) <- corners.(int_of_corner_enum ULB);
-      corners.(int_of_corner_enum ULB) <- corners.(int_of_corner_enum ULF);
-      corners.(int_of_corner_enum ULF) <- corners.(int_of_corner_enum DLF);
-      corners.(int_of_corner_enum DLF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum BL) in
-      edges.(int_of_edge_enum BL) <- edges.(int_of_edge_enum UL);
-      edges.(int_of_edge_enum UL) <- edges.(int_of_edge_enum FL);
-      edges.(int_of_edge_enum FL) <- edges.(int_of_edge_enum DL);
-      edges.(int_of_edge_enum DL) <- hold_edge;
+      self#switch_corners [| DLB; ULB; ULF; DLF |];
+      self#switch_edges [| BL; UL; FL; DL |];
 
       self#update_corner_orientation DLB 1;
       self#update_corner_orientation DLF 2;
@@ -344,35 +328,15 @@ class rubiks_cube =
 
 
     method l_2 () = 
-      let hold_corner = corners.(int_of_corner_enum DLB) in
-      corners.(int_of_corner_enum DLB) <- corners.(int_of_corner_enum ULF);
-      corners.(int_of_corner_enum ULF) <- hold_corner;
-
-      let hold_corner = corners.(int_of_corner_enum ULB) in
-      corners.(int_of_corner_enum ULB) <- corners.(int_of_corner_enum DLF);
-      corners.(int_of_corner_enum DLF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum BL) in
-      edges.(int_of_edge_enum BL) <- edges.(int_of_edge_enum FL);
-      edges.(int_of_edge_enum FL) <- hold_edge;
-
-      let hold_edge = edges.(int_of_edge_enum DL) in
-      edges.(int_of_edge_enum DL) <- edges.(int_of_edge_enum UL);
-      edges.(int_of_edge_enum UL) <- hold_edge;
+      self#swap_corners DLB ULF;
+      self#swap_corners ULB DLF;
+      self#swap_edges BL FL;
+      self#swap_edges DL UL;
 
 
     method f () = 
-      let hold_corner = corners.(int_of_corner_enum ULF) in
-      corners.(int_of_corner_enum ULF) <- corners.(int_of_corner_enum DLF);
-      corners.(int_of_corner_enum DLF) <- corners.(int_of_corner_enum DRF);
-      corners.(int_of_corner_enum DRF) <- corners.(int_of_corner_enum URF);
-      corners.(int_of_corner_enum URF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum UF) in
-      edges.(int_of_edge_enum UF) <- edges.(int_of_edge_enum FL);
-      edges.(int_of_edge_enum FL) <- edges.(int_of_edge_enum DF);
-      edges.(int_of_edge_enum DF) <- edges.(int_of_edge_enum FR);
-      edges.(int_of_edge_enum FR) <- hold_edge;
+      self#switch_corners [| ULF; DLF; DRF; URF |];
+      self#switch_edges [| UF; FL; DF; FR |];
 
       self#update_corner_orientation ULF 2;
       self#update_corner_orientation URF 1;
@@ -385,18 +349,9 @@ class rubiks_cube =
       self#update_edge_orientation FR;
 
 
-  method f_prime () = 
-    let hold_corner = corners.(int_of_corner_enum ULF) in
-      corners.(int_of_corner_enum ULF) <- corners.(int_of_corner_enum URF);
-      corners.(int_of_corner_enum URF) <- corners.(int_of_corner_enum DRF);
-      corners.(int_of_corner_enum DRF) <- corners.(int_of_corner_enum DLF);
-      corners.(int_of_corner_enum DLF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum UF) in
-      edges.(int_of_edge_enum UF) <- edges.(int_of_edge_enum FR);
-      edges.(int_of_edge_enum FR) <- edges.(int_of_edge_enum DF);
-      edges.(int_of_edge_enum DF) <- edges.(int_of_edge_enum FL);
-      edges.(int_of_edge_enum FL) <- hold_edge;
+    method f_prime () = 
+      self#switch_corners [| ULF; URF; DRF; DLF |];
+      self#switch_edges [| UF; FR; DF; FL |];
 
       self#update_corner_orientation ULF 2;
       self#update_corner_orientation URF 1;
@@ -410,35 +365,15 @@ class rubiks_cube =
 
 
     method f_2 () = 
-      let hold_corner = corners.(int_of_corner_enum ULF) in
-      corners.(int_of_corner_enum ULF) <- corners.(int_of_corner_enum DRF);
-      corners.(int_of_corner_enum DRF) <- hold_corner;
-
-      let hold_corner = corners.(int_of_corner_enum URF) in
-      corners.(int_of_corner_enum URF) <- corners.(int_of_corner_enum DLF);
-      corners.(int_of_corner_enum DLF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum UF) in
-      edges.(int_of_edge_enum UF) <- edges.(int_of_edge_enum DF);
-      edges.(int_of_edge_enum DF) <- hold_edge;
-
-      let hold_edge = edges.(int_of_edge_enum FL) in
-      edges.(int_of_edge_enum FL) <- edges.(int_of_edge_enum FR);
-      edges.(int_of_edge_enum FR) <- hold_edge;
+      self#swap_corners ULF DRF;
+      self#swap_corners URF DLF;
+      self#swap_edges UF DF;
+      self#swap_edges FL FR;
 
 
     method r () = 
-      let hold_corner = corners.(int_of_corner_enum DRB) in
-      corners.(int_of_corner_enum DRB) <- corners.(int_of_corner_enum URB);
-      corners.(int_of_corner_enum URB) <- corners.(int_of_corner_enum URF);
-      corners.(int_of_corner_enum URF) <- corners.(int_of_corner_enum DRF);
-      corners.(int_of_corner_enum DRF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum BR) in
-      edges.(int_of_edge_enum BR) <- edges.(int_of_edge_enum UR);
-      edges.(int_of_edge_enum UR) <- edges.(int_of_edge_enum FR);
-      edges.(int_of_edge_enum FR) <- edges.(int_of_edge_enum DR);
-      edges.(int_of_edge_enum DR) <- hold_edge;
+      self#switch_corners [| DRB; URB; URF; DRF |];
+      self#switch_edges [| BR; UR; FR; DR |];
 
       self#update_corner_orientation DRB 2;
       self#update_corner_orientation DRF 1;
@@ -447,17 +382,8 @@ class rubiks_cube =
 
     
     method r_prime () = 
-      let hold_corner = corners.(int_of_corner_enum DRB) in
-      corners.(int_of_corner_enum DRB) <- corners.(int_of_corner_enum DRF);
-      corners.(int_of_corner_enum DRF) <- corners.(int_of_corner_enum URF);
-      corners.(int_of_corner_enum URF) <- corners.(int_of_corner_enum URB);
-      corners.(int_of_corner_enum URB) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum BR) in
-      edges.(int_of_edge_enum BR) <- edges.(int_of_edge_enum DR);
-      edges.(int_of_edge_enum DR) <- edges.(int_of_edge_enum FR);
-      edges.(int_of_edge_enum FR) <- edges.(int_of_edge_enum UR);
-      edges.(int_of_edge_enum UR) <- hold_edge;
+      self#switch_corners [| DRB; DRF; URF; URB |];
+      self#switch_edges [| BR; DR; FR; UR |];
 
       self#update_corner_orientation DRB 2;
       self#update_corner_orientation DRF 1;
@@ -466,36 +392,15 @@ class rubiks_cube =
 
 
     method r_2 () =
-
-      let hold_corner = corners.(int_of_corner_enum DRB) in
-      corners.(int_of_corner_enum DRB) <- corners.(int_of_corner_enum URF);
-      corners.(int_of_corner_enum URF) <- hold_corner;
-
-      let hold_corner = corners.(int_of_corner_enum URB) in
-      corners.(int_of_corner_enum URB) <- corners.(int_of_corner_enum DRF);
-      corners.(int_of_corner_enum DRF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum BR) in
-      edges.(int_of_edge_enum BR) <- edges.(int_of_edge_enum FR);
-      edges.(int_of_edge_enum FR) <- hold_edge;
-
-      let hold_edge = edges.(int_of_edge_enum UR) in
-      edges.(int_of_edge_enum UR) <- edges.(int_of_edge_enum DR);
-      edges.(int_of_edge_enum DR) <- hold_edge;
+      self#swap_corners DRB URF;
+      self#swap_corners URB DRF;
+      self#swap_edges BR FR;
+      self#swap_edges UR DR;
 
     
     method b () = 
-      let hold_corner = corners.(int_of_corner_enum ULB) in
-      corners.(int_of_corner_enum ULB) <- corners.(int_of_corner_enum URB);
-      corners.(int_of_corner_enum URB) <- corners.(int_of_corner_enum DRB);
-      corners.(int_of_corner_enum DRB) <- corners.(int_of_corner_enum DLB);
-      corners.(int_of_corner_enum DLB) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum UB) in
-      edges.(int_of_edge_enum UB) <- edges.(int_of_edge_enum BR);
-      edges.(int_of_edge_enum BR) <- edges.(int_of_edge_enum DB);
-      edges.(int_of_edge_enum DB) <- edges.(int_of_edge_enum BL);
-      edges.(int_of_edge_enum BL) <- hold_edge;
+      self#switch_corners [| ULB; URB; DRB; DLB |];
+      self#switch_edges [| UB; BR; DB; BL |];
 
       self#update_corner_orientation ULB 1;
       self#update_corner_orientation URB 2;
@@ -509,17 +414,8 @@ class rubiks_cube =
 
 
     method b_prime () =
-      let hold_corner = corners.(int_of_corner_enum ULB) in
-      corners.(int_of_corner_enum ULB) <- corners.(int_of_corner_enum DLB);
-      corners.(int_of_corner_enum DLB) <- corners.(int_of_corner_enum DRB);
-      corners.(int_of_corner_enum DRB) <- corners.(int_of_corner_enum URB);
-      corners.(int_of_corner_enum URB) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum UB) in
-      edges.(int_of_edge_enum UB) <- edges.(int_of_edge_enum BL);
-      edges.(int_of_edge_enum BL) <- edges.(int_of_edge_enum DB);
-      edges.(int_of_edge_enum DB) <- edges.(int_of_edge_enum BR);
-      edges.(int_of_edge_enum BR) <- hold_edge;
+      self#switch_corners [| ULB; DLB; DRB; URB |];
+      self#switch_edges [| UB; BL; DB; BR |];
 
       self#update_corner_orientation ULB 1;
       self#update_corner_orientation URB 2;
@@ -533,67 +429,27 @@ class rubiks_cube =
 
 
     method b_2 () =
-      let hold_corner = corners.(int_of_corner_enum ULB) in
-      corners.(int_of_corner_enum ULB) <- corners.(int_of_corner_enum DRB);
-      corners.(int_of_corner_enum DRB) <- hold_corner;
-
-      let hold_corner = corners.(int_of_corner_enum URB) in
-      corners.(int_of_corner_enum URB) <- corners.(int_of_corner_enum DLB);
-      corners.(int_of_corner_enum DLB) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum UB) in
-      edges.(int_of_edge_enum UB) <- edges.(int_of_edge_enum DB);
-      edges.(int_of_edge_enum DB) <- hold_edge;
-
-      let hold_edge = edges.(int_of_edge_enum BL) in
-      edges.(int_of_edge_enum BL) <- edges.(int_of_edge_enum BR);
-      edges.(int_of_edge_enum BR) <- hold_edge;
+      self#swap_corners ULB DRB;
+      self#swap_corners URB DLB;
+      self#swap_edges UB DB;
+      self#swap_edges BL BR;
 
 
     method d () = 
-      let hold_corner = corners.(int_of_corner_enum DLB) in
-      corners.(int_of_corner_enum DLB) <- corners.(int_of_corner_enum DRB);
-      corners.(int_of_corner_enum DRB) <- corners.(int_of_corner_enum DRF);
-      corners.(int_of_corner_enum DRF) <- corners.(int_of_corner_enum DLF);
-      corners.(int_of_corner_enum DLF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum DB) in
-      edges.(int_of_edge_enum DB) <- edges.(int_of_edge_enum DR);
-      edges.(int_of_edge_enum DR) <- edges.(int_of_edge_enum DF);
-      edges.(int_of_edge_enum DF) <- edges.(int_of_edge_enum DL);
-      edges.(int_of_edge_enum DL) <- hold_edge;
+      self#switch_corners [| DLB; DRB; DRF; DLF |];
+      self#switch_edges [| DB; DR; DF; DL |];
 
     
     method d_prime () = 
-      let hold_corner = corners.(int_of_corner_enum DLF) in
-      corners.(int_of_corner_enum DLF) <- corners.(int_of_corner_enum DRF);
-      corners.(int_of_corner_enum DRF) <- corners.(int_of_corner_enum DRB);
-      corners.(int_of_corner_enum DRB) <- corners.(int_of_corner_enum DLB);
-      corners.(int_of_corner_enum DLB) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum DL) in
-      edges.(int_of_edge_enum DL) <- edges.(int_of_edge_enum DF);
-      edges.(int_of_edge_enum DF) <- edges.(int_of_edge_enum DR);
-      edges.(int_of_edge_enum DR) <- edges.(int_of_edge_enum DB);
-      edges.(int_of_edge_enum DB) <- hold_edge;
+      self#switch_corners [| DLF; DRF; DRB; DLB |];
+      self#switch_edges [| DL; DF; DR; DB |];
 
 
     method d_2 () = 
-      let hold_corner = corners.(int_of_corner_enum DLB) in
-      corners.(int_of_corner_enum DLB) <- corners.(int_of_corner_enum DRF);
-      corners.(int_of_corner_enum DRF) <- hold_corner;
-
-      let hold_corner = corners.(int_of_corner_enum DRB) in
-      corners.(int_of_corner_enum DRB) <- corners.(int_of_corner_enum DLF);
-      corners.(int_of_corner_enum DLF) <- hold_corner;
-
-      let hold_edge = edges.(int_of_edge_enum DB) in
-      edges.(int_of_edge_enum DB) <- edges.(int_of_edge_enum DF);
-      edges.(int_of_edge_enum DF) <- hold_edge;
-
-      let hold_edge = edges.(int_of_edge_enum DR) in
-      edges.(int_of_edge_enum DR) <- edges.(int_of_edge_enum DL);
-      edges.(int_of_edge_enum DL) <- hold_edge;
+      self#swap_corners DLB DRF;
+      self#swap_corners DRB DLF;
+      self#swap_edges DB DF;
+      self#swap_edges DR DL;
 
     
     method apply_move = function
@@ -618,18 +474,19 @@ class rubiks_cube =
       | _ -> ()
 
 
+
     method apply_moves moves = 
       List.iter (fun move -> self#apply_move (string_of_move move)) moves
 
 
     method scramble num_moves =
       Random.self_init ();
-      let nb_moves = Array.length all_moves in 
+      let nb_moves = Array.length Moves_store.all_moves in 
       let rec scramble_aux index =
         if index = num_moves then ()
         else (
           let random = Random.int nb_moves in
-          let move = all_moves.(random) in
+          let move = Moves_store.all_moves.(random) in
           let move_string = string_of_move move in
           self#apply_move move_string;
           scramble_aux (index + 1)
