@@ -1,5 +1,6 @@
 open Types
 
+
 let load_file filename =
   let chan = open_in_bin filename in
   let size = in_channel_length chan in
@@ -63,7 +64,7 @@ let combinations n k =
   else (factorial n) / (factorial (n - k) * (factorial k))
 ;;
 
-(* nCk without order*)
+(* nPk without order*)
 let pick n k =
   factorial(n) / factorial(n - k)
 ;;

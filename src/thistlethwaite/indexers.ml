@@ -1,6 +1,5 @@
 open ExtLib
 open Utils_module
-open Utils_module.Utils
 open Rubiks_cube
 
 (* This module contains functions that are used to index the various permutations of the Rubik's cube. *)
@@ -37,9 +36,9 @@ let compute_tetrad_pair (cube: rubiks_cube) (c1, c2) =
   let rec compute_tetrad_pair_aux tetrad_pair combo_index i = 
     if i = nb_corners || combo_index >= 2 then tetrad_pair
     else (
-      let corner_index = cube#get_corner_index (corner_enum_of_int i) in
+      let corner_index = cube#get_corner_index (Utils.corner_enum_of_int i) in
 
-      if (corner_index = int_of_corner_enum c1 || corner_index = int_of_corner_enum c2) then (
+      if (corner_index = Utils.int_of_corner_enum c1 || corner_index = Utils.int_of_corner_enum c2) then (
         tetrad_pair.(combo_index) <- i;
         compute_tetrad_pair_aux tetrad_pair (combo_index + 1) (i + 1);
       ) else (

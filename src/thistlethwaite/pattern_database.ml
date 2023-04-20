@@ -16,6 +16,12 @@ class pattern_database =
       self#load_group_2_to_3;
       self#load_group_3_to_4;
 
+      (* print size of each db *)
+      print_endline ("Group 0 to 1 : " ^ (string_of_int group_0_to_1.size));
+      print_endline ("Group 1 to 2 : " ^ (string_of_int group_1_to_2.size));
+      print_endline ("Group 2 to 3 : " ^ (string_of_int group_2_to_3.size));
+      print_endline ("Group 3 to 4 : " ^ (string_of_int group_3_to_4.size));
+
 
     (* Getters *)
     method get_group_0_to_1 () = group_0_to_1;
@@ -25,10 +31,10 @@ class pattern_database =
 
 
     (* Pattern databases loaders *)
-    method load_group_0_to_1 = group_0_to_1 <- Functions.load_file "src/databases/thistlethwiateG1.pdb";
-    method load_group_1_to_2 = group_1_to_2 <- Functions.load_file "src/databases/thistlethwiateG2.pdb";
-    method load_group_2_to_3 = group_2_to_3 <- Functions.load_file "src/databases/thistlethwiateG3.pdb";
-    method load_group_3_to_4 = group_3_to_4 <- Functions.load_file "src/databases/thistlethwiateG4.pdb";
+    method load_group_0_to_1 = group_0_to_1 <- Functions.load_file "src/databases/G1.pdb";
+    method load_group_1_to_2 = group_1_to_2 <- Functions.load_file "src/databases/G2.pdb";
+    method load_group_2_to_3 = group_2_to_3 <- Functions.load_file "src/databases/G3.pdb";
+    method load_group_3_to_4 = group_3_to_4 <- Functions.load_file "src/databases/G4.pdb";
 
 
     (* Pattern databases getter *)
@@ -46,6 +52,13 @@ class pattern_database =
       | Types.Group_1_2 -> self#get_index_group_1_to_2 cube
       | Types.Group_2_3 -> self#get_index_group_2_to_3 cube
       | Types.Group_3_4 -> self#get_index_group_3_to_4 cube
+
+
+    method is_full = function 
+      | Types.Group_0_1 -> group_0_to_1.size = 1025
+      | Types.Group_1_2 -> group_1_to_2.size = 541283
+      | Types.Group_2_3 -> group_2_to_3.size = 176401
+      | Types.Group_3_4 -> group_3_to_4.size = 331777
 
 
     (*

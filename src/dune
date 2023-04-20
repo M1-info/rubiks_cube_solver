@@ -1,4 +1,4 @@
 (executable
  (public_name rubiks_cube_solver)
  (name main)
- (libraries classes_module))
+ (libraries thistlethwaite_module utils_module))
