@@ -38,3 +38,8 @@ The program is build with dune. To build it, from the root of the project, run:
 To run the solver, from the root of the project:
         
         dune exec rubiks_cube_solver
+
+
+The program is already build and can be run directly from the root of the project:
+
+        ./_build/install/default/bin/rubiks_cube_solver
