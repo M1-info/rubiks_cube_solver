@@ -453,24 +453,24 @@ class rubiks_cube =
 
     
     method apply_move = function
-      | "u"       -> self#u ()
-      | "u_prime" -> self#u_prime ()
-      | "u_2"     -> self#u_2 ()
-      | "r"       -> self#r ()
-      | "r_prime" -> self#r_prime ()
-      | "r_2"     -> self#r_2 ()
-      | "f"       -> self#f ()
-      | "f_prime" -> self#f_prime ()
-      | "f_2"     -> self#f_2 ()
-      | "l"       -> self#l ()
-      | "l_prime" -> self#l_prime ()
-      | "l_2"     -> self#l_2 ()
-      | "b"       -> self#b ()
-      | "b_prime" -> self#b_prime ()
-      | "b_2"     -> self#b_2 ()
-      | "d"       -> self#d ()
-      | "d_prime" -> self#d_prime ()
-      | "d_2"     -> self#d_2 ()
+      | "U"       -> self#u ()
+      | "U'" -> self#u_prime ()
+      | "U2"     -> self#u_2 ()
+      | "R"       -> self#r ()
+      | "R'" -> self#r_prime ()
+      | "R2"     -> self#r_2 ()
+      | "F"       -> self#f ()
+      | "F'" -> self#f_prime ()
+      | "F2"     -> self#f_2 ()
+      | "L"       -> self#l ()
+      | "L'" -> self#l_prime ()
+      | "L2"     -> self#l_2 ()
+      | "B"       -> self#b ()
+      | "B'" -> self#b_prime ()
+      | "B2"     -> self#b_2 ()
+      | "D"       -> self#d ()
+      | "D'" -> self#d_prime ()
+      | "D2"     -> self#d_2 ()
       | _ -> ()
 
 
@@ -482,16 +482,22 @@ class rubiks_cube =
     method scramble num_moves =
       Random.self_init ();
       let nb_moves = Array.length Moves_store.all_moves in 
-      let rec scramble_aux index =
-        if index = num_moves then ()
+      let rec scramble_aux index list =
+        if index = num_moves then list
         else (
           let random = Random.int nb_moves in
           let move = Moves_store.all_moves.(random) in
           let move_string = string_of_move move in
           self#apply_move move_string;
-          scramble_aux (index + 1)
+          scramble_aux (index + 1) list@[move_string]
         )
-      in scramble_aux 0; 
+      in
+      let moves = scramble_aux 0 [] in
+      List.iteri (fun i move -> 
+        print_string move; 
+        if i mod 10 = 0 && i > 0 then print_newline ()
+        else print_string " "
+      ) moves;
 
 
     method show_cube = 

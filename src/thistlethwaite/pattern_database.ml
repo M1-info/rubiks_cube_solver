@@ -16,12 +16,6 @@ class pattern_database =
       self#load_group_2_to_3;
       self#load_group_3_to_4;
 
-      (* print size of each db *)
-      print_endline ("Group 0 to 1 : " ^ (string_of_int group_0_to_1.size));
-      print_endline ("Group 1 to 2 : " ^ (string_of_int group_1_to_2.size));
-      print_endline ("Group 2 to 3 : " ^ (string_of_int group_2_to_3.size));
-      print_endline ("Group 3 to 4 : " ^ (string_of_int group_3_to_4.size));
-
 
     (* Getters *)
     method get_group_0_to_1 () = group_0_to_1;

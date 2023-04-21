@@ -4,11 +4,21 @@ open Thistlethwaite_module
 let solve_cube () = 
   let cube = new Rubiks_cube.rubiks_cube in
   cube#init ();
-  cube#scramble 200;
   print_newline ();
-  print_string "Start cube:";
+  print_newline ();
+  print_string "Mouvement to scramble the cube : ";
+  print_newline ();
+  print_newline ();
+  cube#scramble 100;
+  print_newline ();
+  print_newline ();
+  print_string "Scrambled cube:";
+  print_newline ();
   cube#show_cube;
+  print_newline ();
+  print_newline ();
   print_string "------------------";
+  print_newline ();
   print_newline ();
 
   let pattern_database = new Pattern_database.pattern_database in 
@@ -54,7 +64,9 @@ let solve_cube () =
       print_float (Sys.time() -. delta_time);
       print_string " seconds !";
       print_newline ();
+      print_newline ();
       print_string "------------------";
+      print_newline ();
       print_newline ();
 
       solve_cube_aux cube moves (i + 1);
@@ -74,7 +86,8 @@ let solve_cube () =
   print_newline ();
 ;;
 
-solve_cube ();;
+solve_cube();;
+
 
 
   
