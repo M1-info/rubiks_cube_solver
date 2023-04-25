@@ -1,15 +1,13 @@
-open Utils_module
-open Thistlethwaite_module
+open Renderer_module;;
+open Thistlethwaite_module;;
+open Utils_module;;
 
-let solve_cube () = 
-  let cube = new Rubiks_cube.rubiks_cube in
-  cube#init ();
+let solve_cube cube = 
+  let cube = cube#copy () in
   print_newline ();
   print_newline ();
   print_string "Mouvement to scramble the cube : ";
   print_newline ();
-  print_newline ();
-  cube#scramble 100;
   print_newline ();
   print_newline ();
   print_string "Scrambled cube:";
@@ -84,9 +82,41 @@ let solve_cube () =
   print_float (Sys.time() -. start_time);
   print_string " seconds !";
   print_newline ();
+  
+  (simplified_moves)
 ;;
 
-solve_cube();;
+let cube = new Rubiks_cube.rubiks_cube;;
+cube#init ();
+cube#scramble 100;;
+let moves = solve_cube cube;;
+
+ignore (read_line ());
+Graphics.open_graph " 800x600";
+Graphics.set_window_title "Rubik's Cube";
+Graphics.set_font "-adobe-helvetica-bold-r-*-*-25-180-100-100-*-*-iso8859-1";
+Rubiks_cube_renderer.draw_cube cube;
+ignore (read_line ());
+List.iteri(fun i move -> 
+  Graphics.clear_graph ();
+  cube#apply_move (Utils.string_of_move move);
+  Rubiks_cube_renderer.draw_cube cube;
+  Graphics.moveto (Graphics.size_x () - 200) (Graphics.size_y () - 100);
+  Graphics.draw_string "Move : ";
+  Graphics.draw_string (Utils.string_of_move move);
+  Graphics.moveto (Graphics.size_x () - 200) (Graphics.size_y () - 150);
+  Graphics.draw_string " (";
+  Graphics.draw_string (string_of_int (i + 1));
+  Graphics.draw_string " / ";
+  Graphics.draw_string (string_of_int (List.length moves));
+  Graphics.draw_string ")";
+  Unix.sleepf 0.25 ;
+  ) moves;
+ignore (read_line ());
+Graphics.close_graph ();
+
+
+
 
 
 

@@ -1,0 +1,4 @@
+(library
+ (name renderer_module)
+ (modules rubiks_cube_renderer)
+ (libraries thistlethwaite_module utils_module graphics))
