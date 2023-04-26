@@ -7,9 +7,8 @@ The solver is a IDA* search implementation. It is able to solve a cube in averag
 
 The following statistics are based on 500 random cubes.
 
-| Moves to solve | Time (s) |
-|----------------|----------|
-| 30             | 0,000    |
+![Statistics](assets/plot-nb_moves.png)
+![Statistics](assets/plot-time.png)
 
 
 ## Overview
