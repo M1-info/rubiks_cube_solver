@@ -1,7 +1,16 @@
 # Rubik's cube solver in Ocaml
 
 This is a implementation of a Rubik's cube solver in Ocaml. It is based on the [Thistlethwaite algorithm](https://en.wikipedia.org/wiki/Morwen_Thistlethwaite) and uses a pattern database as a heuristic to pass along each Thistlethwaite algorithm groups.
-The solver is a IDA* search implementation. It is able to solve a cube in average 30 moves and in less than 0,5 seconds. The pattern database is generated using a non-iterative IDDFS algorithm. The database are stored in the `database` folder.
+The solver is a IDA* search implementation. It is able to solve a cube in average 30 moves and in less than 0,05 seconds. The pattern database is generated using a non-iterative IDDFS algorithm. The database are stored in the `database` folder.
+
+## Statistics
+
+The following statistics are based on 500 random cubes.
+
+| Moves to solve | Time (s) |
+|----------------|----------|
+| 30             | 0,000    |
+
 
 ## Overview
 
@@ -17,16 +26,25 @@ The program is composed of multiples files :
 
 - `solver.ml` contains the implementation of the IDA* and the non-iterative IDDFS algorithm.
 
+## Screenshots
+
+- Screen of the program runned in the terminal :
+![Screenshot](assets/screenshot-solver.png)
+
+- Gif of the visualisation of the mouvements of the solver :
+![Gif](assets/gif-solver.gif)
+
 ## Dependencies
 
 The program depends on the following libraries:
 
 - [dune](https://github.com/ocaml/dune)
 - [extlib](https://github.com/ygrek/ocaml-extlib)
+- [Graphics](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Graphics.html)
 
 Depends on your ocaml installation, you can install them with:
 
-        opam install dune extlib
+        opam install dune extlib graphics
 
 
 ## Usage
@@ -38,8 +56,3 @@ The program is build with dune. To build it, from the root of the project, run:
 To run the solver, from the root of the project:
         
         dune exec rubiks_cube_solver
-
-
-The program is already build and can be run directly from the root of the project:
-
-        ./_build/install/default/bin/rubiks_cube_solver
